@@ -1,0 +1,1 @@
+{"$schema":"../gen/schemas/desktop-schema.json","description":"Default capability for the main window. The web app is fully self-contained (localStorage only) and does not call the Tauri JS API; permissions are kept minimal.","identifier":"default","permissions":["core:default"],"windows":["main"]}

@@ -1,0 +1,49 @@
+name: build-windows
+
+# Build the AI PM Coach Windows installer (Tauri + NSIS, WebView2 offline installer embedded).
+# The Tauri project lives in the packaging/ subfolder of this repo.
+# Trigger: manually via "Run workflow", or automatically on pushes to main
+# that touch packaging/ or this workflow file.
+# Download the result from the run's Artifacts section (AI-PM-Coach-Windows).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packaging/**"
+      - ".github/workflows/build-windows.yml"
+
+defaults:
+  run:
+    working-directory: packaging
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust (MSVC target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Tauri app (NSIS bundle)
+        run: npx tauri build --target x86_64-pc-windows-msvc --bundles nsis
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-PM-Coach-Windows
+          path: packaging/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          if-no-files-found: error

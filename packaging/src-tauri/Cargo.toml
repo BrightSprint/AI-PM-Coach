@@ -1,0 +1,17 @@
+[package]
+name = "ai-pm-coach"
+version = "0.1.0"
+description = "AI PM Coach - Windows desktop shell (Tauri)"
+edition = "2021"
+default-run = "ai-pm-coach"
+
+[lib]
+name = "ai_pm_coach_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"

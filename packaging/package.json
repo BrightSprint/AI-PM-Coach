@@ -1,0 +1,1 @@
+{"description":"Tauri packaging project for AI PM Coach (Windows NSIS installer, WebView2 offline install)","devDependencies":{"@tauri-apps/cli":"^2"},"name":"ai-pm-coach-packaging","private":true,"scripts":{"tauri":"tauri"},"version":"0.1.0"}
