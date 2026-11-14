@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output & caches
+dist/
+build/
+.space-build/
+.space-build-cvm/
+.harness/
+.cache/
+*.tsbuildinfo
+
+# Tauri / Rust (exe version, future)
+target/
+src-tauri/target/
+
+# Platform audit artifacts
+audits/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs & temp files
+*.log
+*.tmp
+*.bak
+
+# Local env
+.env
+.env.*

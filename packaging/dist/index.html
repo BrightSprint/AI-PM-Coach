@@ -597,6 +597,19 @@
   .drill-sec h3{font-size:15px;font-weight:700;color:var(--text-strong);margin:0 0 6px}
   .drill-sec .section-desc{margin:0 0 10px}
   .drill-q{font-size:21px;line-height:1.55;font-weight:700;color:var(--text-strong);margin:6px 0 0}
+  .glo-search{margin:18px 0 12px}
+  .glo-search input{width:100%;box-sizing:border-box;padding:12px 14px;font-size:15px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;color:var(--text);font-family:inherit}
+  .glo-search input:focus{outline:2px solid var(--primary-soft-border);border-color:var(--primary)}
+  .glo-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .glo-item{text-align:left;background:#fff;border:1px solid var(--border-soft);border-radius:var(--radius-lg);padding:14px 16px;cursor:pointer;width:100%;font-family:inherit}
+  .glo-item:hover{border-color:var(--primary-soft-border)}
+  .glo-item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .glo-item-head b{font-size:15.5px;color:var(--text-strong)}
+  .glo-cat{font-size:12px;color:var(--primary);background:var(--primary-soft);border-radius:999px;padding:2px 8px}
+  .glo-item p{margin:6px 0 0;font-size:13.5px;line-height:1.7;color:var(--muted)}
+  .glo-supp-note{font-size:12.5px;color:var(--faint);margin-top:6px}
+  .glo-kw{display:flex;gap:6px;flex-wrap:wrap;margin-top:18px}
+  .glo-kw span{font-size:12px;color:var(--muted);border:1px solid var(--border-soft);border-radius:999px;padding:2px 8px}
   .drill-body{font-size:14.5px;line-height:1.85;color:var(--text)}
   .drill-body h4{font-size:15.5px;font-weight:700;color:var(--text-strong);margin:22px 0 6px}
   .drill-body h5{font-size:14.5px;font-weight:700;color:var(--text-strong);margin:16px 0 4px}
@@ -1021,6 +1034,14 @@
       <button class="btn-primary" type="button" id="review-start-btn">开始复习</button>
     </div>
 
+    <div class="learn-rec" aria-label="知识搜索">
+      <div>
+        <b>查概念、术语和工具：知识搜索</b>
+        <p>知识库与补强篇的词条都在这里：技术术语、应用工具、产品名词、补强概念，每条拆成「概念介绍 / 使用方案 / 注意事项」三段，内容整理自知识库原文，本地检索、不联网、无 AI 生成。</p>
+      </div>
+      <button class="btn-primary" type="button" data-goto="view-glossary">打开知识搜索</button>
+    </div>
+
     <h3 class="section-label" style="margin-top:32px">完整学习路径 · 6 阶段 / 27 个知识点</h3>
     <p class="section-desc">学习内容对应题库共 634 道核心题：每个知识点的练习区由 1 道入门题加按关键词从题库同维度匹配的真实题目（相关度优先、同相关度内按难度升序）组成。</p>
     <p class="section-desc">点任意知识点进入学习页：先看讲解和案例，再做一道带解析的练习。顺序就是建议的学习顺序。</p>
@@ -1056,6 +1077,42 @@
     <span style="width:76px"></span>
   </header>
   <main class="detail-wrap" id="detail-wrap"></main>
+</section>
+
+<!-- ==================== VIEW: GLOSSARY SEARCH ==================== -->
+<section class="view" id="view-glossary" aria-label="知识搜索">
+  <header class="topbar">
+    <button class="back-btn" type="button" data-goto="view-learn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      学习模式
+    </button>
+    <div class="topbar-note">知识搜索</div>
+    <span style="width:76px"></span>
+  </header>
+  <main class="learn-wrap">
+    <p class="doc-eyebrow">Glossary</p>
+    <h2 class="doc-title">知识搜索</h2>
+    <p class="doc-lede">查 AI 相关的知识点、概念和常用名词术语。每条按<strong>概念介绍、使用方案、注意事项</strong>三段整理自知识库原文；本地检索，不联网、无 AI 生成。个别段落原条目未展开的，会在段下标明为通用补写。</p>
+    <div class="glo-search">
+      <input id="glo-input" type="search" placeholder="输入关键词，如 RAG、向量数据库、Coze、幻觉…" autocomplete="off" aria-label="搜索词条">
+    </div>
+    <div class="chip-row" id="glo-cat-filter" aria-label="分类筛选"></div>
+    <p class="section-desc" id="glo-count" aria-live="polite"></p>
+    <div class="glo-list" id="glo-results"></div>
+  </main>
+</section>
+
+<!-- ==================== VIEW: GLOSSARY DETAIL ==================== -->
+<section class="view" id="view-glossary-detail" aria-label="词条详情">
+  <header class="topbar">
+    <button class="back-btn" type="button" data-goto="view-glossary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      知识搜索
+    </button>
+    <div class="topbar-note">词条详情</div>
+    <span style="width:76px"></span>
+  </header>
+  <main class="detail-wrap" id="glo-detail-wrap"></main>
 </section>
 
 <!-- ==================== VIEW 7: GROWTH ==================== -->
@@ -1391,6 +1448,31 @@
       <div class="check-item" data-testid="DRL-07" data-module="面试演练"><b>DRL-07 · 五段正文渲染安全【已执行】</b><p>模块：面试演练。前置：含脚本标签、粗体、列表、表格的合成 Markdown 与一条真实条目正文。步骤：DrillLink.mdToHtml 渲染。预期：脚本标签被转义不执行；粗体/列表/表格正确成形；真实正文渲染非空。断言：<code>!html.includes('&lt;script&gt;') &amp;&amp; html.includes('&lt;strong&gt;') &amp;&amp; html.includes('&lt;td&gt;') &amp;&amp; realHtml.length &gt; 200</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="DRL-08" data-module="面试演练"><b>DRL-08 · 演练单题流程与小结【UI 流程】</b><p>模块：面试演练。前置：从落地页或学习首页进入演练首页。步骤：选维度与题量 3 开始一组 — 每题先只显示题干 → 点「看参考答案」出现拆解与小像案例两段（坑与追问段此时不出现）→ 点展开后出现坑与追问段和自评三档 → 逐题自评至组末。预期：组末小结的自评分布与逐题所点一致；小结按本组涉及维度列出对应学习知识点入口，点击能进入对应知识点学习页；自评为模糊/不会的题出现在演练首页「待加强」列表且可一键只练这批；全程无任何自动评分或分数出现。</p></div>
     </div>
+
+    <div class="check-group"><h3>十、知识搜索结构化自测用例（GLO）</h3>
+      <div class="check-item" data-testid="GLO-01" data-module="知识搜索"><b>GLO-01 · 词条数据完整性【已执行】</b><p>模块：知识搜索。前置：Node 加载 assets/glossary.js。步骤：统计总数、id 连续性、分类计数、逐条校验三段非空与字段合法性、补遗标记。预期：总数 147（知识库 104 + 补强 20 + supplement2 补遗 23）；分类 技术术语 60 / 应用工具 27 / 产品名词 40 / 补强 20；补遗 23 条均带 batch=supplement2 且 supp 为空。断言：<code>BANK.length == 147 &amp;&amp; ids == KB-001..KB-147 &amp;&amp; cats == {60,27,40,20} &amp;&amp; s2.length == 23</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-02" data-module="知识搜索"><b>GLO-02 · 标题精确优先【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：分别搜「向量数据库」、某词条全名、英文「Transformer」。预期：首条依次为向量数据库词条、该词条本身、补遗 Transformer 条目。断言：<code>search('向量数据库')[0].term 含向量数据库 &amp;&amp; search(term)[0].id == 该条 id &amp;&amp; search('Transformer')[0].batch == 'supplement2'</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-03" data-module="知识搜索"><b>GLO-03 · 排序口径【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：搜「模型」，用引擎 _scoreTerm 复算每条得分并检查标题命中与纯正文命中的相对位置。预期：得分序列非递增；标题含「模型」的条目全部排在纯正文命中之前。断言：<code>scores 单调非增 &amp;&amp; max(titleIdx) &lt; min(bodyOnlyIdx)</code>（实测通过，命中 87 条）。</p></div>
+      <div class="check-item" data-testid="GLO-04" data-module="知识搜索"><b>GLO-04 · 分类筛选【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：空查询分别按补强/技术术语/全部分类检索；再在应用工具分类内搜「模型」。预期：计数依次 20/60/147；分类内结果只含该分类。断言：<code>supp.length == 20 &amp;&amp; tech.length == 60 &amp;&amp; all.length == 147 &amp;&amp; inCat.every(cat == '应用工具')</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-05" data-module="知识搜索"><b>GLO-05 · 正文命中与无结果【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：取 KB-031 注意事项首 4 字作查询；再搜无意义字符串。预期：前者结果含 KB-031；后者为空数组。断言：<code>search(probe).some(id == 'KB-031') &amp;&amp; search('zzzz不存在的词xyz').length == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-06" data-module="知识搜索"><b>GLO-06 · 相关知识点匹配【已执行】</b><p>模块：知识搜索。前置：GlossaryLink.relatedPoints 与 27 个知识点标题。步骤：对自带 kp 的条目、对无 kp 的合成条目（词条名/关键词与某知识点标题重合）、对完全无关的合成条目分别求相关知识点。预期：依次为 [kp]、[该知识点下标]、空数组（链不上不硬凑）。断言：<code>relatedPoints(withKp) == [kp] &amp;&amp; relatedPoints(fake)[0] == 0 &amp;&amp; relatedPoints(orphan).length == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-07" data-module="知识搜索"><b>GLO-07 · 列表摘要【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：对首条词条取 summaryOf。预期：摘要等于概念段首句（至第一个句号），超长时截断加省略号。断言：<code>summary.length &lt;= 65 &amp;&amp; concept.startsWith(summary 去省略号)</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-08" data-module="知识搜索"><b>GLO-08 · 搜索界面流程【UI 流程 · 已执行】</b><p>模块：知识搜索。前置：无头 Chromium 打开应用。步骤：学习页点「打开知识搜索」→ 看默认列表 → 搜「向量数据库」打开详情 → 点「相关知识点」按钮 → 返回后打开一条 supp 非空词条 → 切分类到「补强」。预期：默认恰列 147 条；详情三段齐全（概念介绍/使用方案/注意事项）；相关知识点按钮跳到对应知识点学习页；补写段下方注记数与该条 supp 段数一致；补强分类恰 20 条且全为补强。断言：<code>shown == 147 &amp;&amp; heads 含三段 &amp;&amp; jump 后 view == view-learn-detail &amp;&amp; suppNotes == supp.length &amp;&amp; catShown == 20</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-09" data-module="知识搜索"><b>GLO-09 · 零存储零网络【已执行】</b><p>模块：知识搜索。前置：同 GLO-08，开启请求与存储监控（快照取在相关知识点跳转之前，跳转写 learn 键属学习功能自身持久化）。步骤：完成检索/筛选/详情浏览全流程后对比十键集合。预期：知识搜索本身不新增任何 localStorage key、不发外部请求、无 pageerror。断言：<code>tenKeysBefore deepEqual tenKeysAfter &amp;&amp; external.length == 0 &amp;&amp; pageErrors.length == 0</code>（实测通过）。</p></div>
+    </div>
+
+    <div class="check-group"><h3>十一、异常测试用例（ABN：断网 / 突然关闭 / 断电强杀 / 存储损坏）</h3>
+      <div class="check-item" data-testid="ABN-01" data-module="异常"><b>ABN-01 · 断网时答题中【已执行】</b><p>模块：异常。前置：无头 Chromium 开始一轮测评并答 2 题。步骤：context.setOffline(true) 后答完余下 16 题。预期：正常到达结果页；离线期间零 pageerror、零 http 请求失败。断言：<code>view == view-result &amp;&amp; newPageErrors == 0 &amp;&amp; failedHttp == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-02" data-module="异常"><b>ABN-02 · 断网时学习中（含知识搜索）【已执行】</b><p>模块：异常。前置：页面加载后 setOffline(true)。步骤：进学习模式打开知识点详情并做练习题；再进知识搜索搜「数据」。预期：详情可打开、练习作答有解析反馈、知识搜索有结果；全程零 pageerror、零 http 请求失败。断言：<code>practiceFb.length &gt; 0 &amp;&amp; gloResults &gt; 0 &amp;&amp; errors == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-03" data-module="异常"><b>ABN-03 · 断网时演练中【已执行】</b><p>模块：异常。前置：页面加载后 setOffline(true)。步骤：开始一组演练 → 看参考答案 → 展开 → 自评一档。预期：全流程可走完且自评写入 aipm.drill.v1；零 pageerror、零 http 请求失败。断言：<code>rated &gt;= 1 &amp;&amp; errors == 0 &amp;&amp; failedHttp == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-04" data-module="异常"><b>ABN-04 · 突然关闭时答题恢复【已执行】</b><p>模块：异常。前置：开始测评并答 3 题（aipm.inprogress.v1 已写入 3 条记录）。步骤：直接关页（不点任何按钮）→ 同一浏览器上下文新开页面。预期：落地页出现恢复卡（已答 3 题）；点「继续作答」回到第 4 题且前 3 题记录保留。断言：<code>resume 含「已答 3 题」 &amp;&amp; prog.records.length == 3 &amp;&amp; back 后 progressText 含「4」</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-05" data-module="异常"><b>ABN-05 · 突然关闭时学习进度保留【已执行】</b><p>模块：异常。前置：打开任一知识点并点「标记已学」。步骤：直接关页 → 重开读 aipm.learn.v1。预期：存储逐字不变且 learned 至少含该知识点。断言：<code>before == after &amp;&amp; learned.length &gt;= 1</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-06" data-module="异常"><b>ABN-06 · 突然关闭时演练自评保留【已执行】</b><p>模块：异常。前置：演练中自评一条为「不会」。步骤：直接关页 → 重开进演练首页读统计。预期：aipm.drill.v1 逐字不变；统计显示已练 ≥1。断言：<code>before == after &amp;&amp; stats 已练 &gt;= 1</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-07" data-module="异常"><b>ABN-07 · 突然关闭时阶段小测无半成品【已执行】</b><p>模块：异常。前置：记录 aipm.stagequiz.v1 当前值（可为空）。步骤：开始阶段小测答 2 题 → 直接关页 → 重开再读该键。预期：开始前/答题中/重开后三值逐字一致——小测只在完成结算时落盘，中途关闭不产生半成品记录。断言：<code>before == mid == after</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-08" data-module="异常"><b>ABN-08 · 断电强杀模拟（进程 SIGKILL）【已执行 · 含平台观察】</b><p>模块：异常。前置：持久化浏览器配置中造数：完整测评一轮 + 学习标记 + 演练自评 + 种子键（共 7 个已有键）。步骤：pkill -9 强杀全部 Chromium 进程 → 同配置重启打开应用 → 再开始一轮测评答 4 题后二次强杀 → 重启。预期（断言）：重开不白屏（落地页正常渲染）；存活键均可 JSON 解析；题库就绪校验不误报、可立即开始测评并作答；二次强杀后进行中进度或逐字完整（恢复卡正确）或整批干净缺失，绝不出现撕裂半截值。观察（非断言）：逐字存活键数逐轮记录——localStorage 由 Chromium 存储服务异步批提交，强杀时未提交的尾批写入可能整批丢失（实测静置 2–8 秒、刷新、尾随写均不能可靠强制提交，JS 层无落盘 API），属平台机制而非应用缺陷；本轮实测阶段一存活 3/7（attempts/snapshots/review 完整）、阶段二进度整批干净缺失。正常关闭路径的逐字完整性由 ABN-04..07 覆盖；防丢的正式手段是「数据管理 → 导出全部数据」备份。断言：<code>view == view-landing &amp;&amp; parseOk &amp;&amp; quizRestartable &amp;&amp; (progIntact || progCleanAbsent)</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-09" data-module="异常"><b>ABN-09 · 存储损坏逐 key 兜底【已执行】</b><p>模块：异常。前置：无头 Chromium 打开应用。步骤：对 10 个键逐一注入 6 种坏值（坏 JSON、纯数字、纯字符串、null、错型数组、截断 JSON），每次注入后整页刷新。预期：60 种组合下均不白屏、无 pageerror、回到落地页且标题正常。断言：<code>∀key, ∀bad: view == view-landing &amp;&amp; title 非空 &amp;&amp; newPageErrors == 0</code>（实测通过。本轮曾发现 attempts/snapshots 在「合法 JSON 但类型错误」时抛错，已给两个加载函数加数组+对象条目过滤并复测通过，申诉提交处同类隐患一并加固）。</p></div>
+      <div class="check-item" data-testid="ABN-10" data-module="异常"><b>ABN-10 · 存储损坏全 key 同时损坏【已执行】</b><p>模块：异常。前置：同 ABN-09。步骤：10 个键同时注入坏 JSON → 刷新 → 开始测评并答 1 题。预期：不白屏、无 pageerror、测评可正常启动作答（题库就绪校验不误报）。断言：<code>view == view-landing &amp;&amp; quiz 可启动 &amp;&amp; errors == 0</code>（实测通过）。</p></div>
+    </div>
   </main>
 </section>
 
@@ -1416,6 +1498,8 @@
 <script src="assets/review-link.js"></script>
 <script src="assets/drill-bank.js"></script>
 <script src="assets/drill-link.js"></script>
+<script src="assets/glossary.js"></script>
+<script src="assets/glossary-link.js"></script>
 <script>
   (function(){
     var views = document.querySelectorAll('.view');
@@ -1436,6 +1520,7 @@
       if(id === 'view-learn'){ renderPath(); renderPlanPanel(); renderReviewBanner(); }
       if(id === 'view-wrongbook'){ renderWrongbook(); }
       if(id === 'view-drill'){ renderDrillHome(); }
+      if(id === 'view-glossary'){ renderGlossary(); }
       if(id === 'view-intro'){ renderQuizSettings(); }
       if(id === 'view-landing'){ renderHomeExtras(); }
       if(id === 'view-growth'){ renderGrowth(); }
@@ -1542,7 +1627,7 @@
     /* ---------- 能力快照 ---------- */
     var SNAP_KEY = 'aipm.snapshots.v1';
     function loadSnapshots(){
-      try { var raw = window.localStorage.getItem(SNAP_KEY); return raw ? JSON.parse(raw) : []; }
+      try { var raw = window.localStorage.getItem(SNAP_KEY); var v = raw ? JSON.parse(raw) : []; return Array.isArray(v) ? v.filter(function(s){ return s && typeof s === 'object'; }) : []; }
       catch(e){ return []; }
     }
     function saveSnapshot(snap){
@@ -1742,7 +1827,8 @@
     function loadAttempts(){
       try {
         var raw = window.localStorage.getItem(STORE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        var v = raw ? JSON.parse(raw) : [];
+        return Array.isArray(v) ? v.filter(function(a){ return a && typeof a === 'object'; }) : [];
       } catch(e){ return memoryFallback.slice(); }
     }
     function saveAttempt(attempt){
@@ -2918,7 +3004,7 @@
       var h = '';
       h += '<div class="quiz-progress-row"><span class="quiz-progress-text">第 <strong>' + (drillSession.idx + 1) + '</strong> 题 / 共 ' + total + ' 题</span>' +
            '<span class="quiz-progress-pct">' + entry.gid + '</span></div>';
-      h += '<div class="quiz-progress"><div class="quiz-progress-fill" style="width:' + Math.round(drillSession.idx / total * 100) + '%"></div></div>';
+      h += '<div class="quiz-progress"><div class="quiz-progress-fill" style="width:' + Math.round((drillSession.idx + 1) / total * 100) + '%"></div></div>';
       h += '<article class="quiz-card">';
       h += '<p class="quiz-meta"><span>' + entry.gid + '</span><span aria-hidden="true">·</span><span class="q-dim">' +
            (entry.dimension || '综合') + (entry.difficulty ? ' · 难度 ' + entry.difficulty : '') + '</span></p>';
@@ -3014,6 +3100,93 @@
       }
       var quit = document.getElementById('drill-quit-btn');
       if(quit){ quit.addEventListener('click', function(){ drillSession = null; show('view-drill'); }); }
+    })();
+
+    /* ================= 知识搜索（本地词条检索 · 无存储 / 无网络 / 无 LLM） ================= */
+    var GLO = (typeof GLOSSARY_BANK !== 'undefined' && Array.isArray(GLOSSARY_BANK)) ? GLOSSARY_BANK : [];
+    var gloQuery = '';
+    var gloCat = '全部';
+    var gloCurrent = null;
+    function gloEsc(s){
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function renderGlossary(){
+      var catEl = document.getElementById('glo-cat-filter');
+      chipRowRender(catEl, GlossaryLink.GLOSSARY_CATS.map(function(c){ return { value: c, label: c }; }), gloCat, function(v){
+        gloCat = v; renderGlossary();
+      });
+      var input = document.getElementById('glo-input');
+      if(input && input.value !== gloQuery){ input.value = gloQuery; }
+      var results = GlossaryLink.searchGlossary(GLO, gloQuery, gloCat);
+      var countEl = document.getElementById('glo-count');
+      if(countEl){
+        countEl.textContent = gloQuery
+          ? ('共 ' + GLO.length + ' 条词条，当前匹配 ' + results.length + ' 条（标题精确/包含优先，其次关键词与正文命中）')
+          : ('共 ' + GLO.length + ' 条词条' + (gloCat === '全部' ? '' : '，当前分类 ' + results.length + ' 条'));
+      }
+      var box = document.getElementById('glo-results');
+      if(!box){ return; }
+      box.innerHTML = '';
+      if(!results.length){
+        var empty = document.createElement('p');
+        empty.className = 'section-desc';
+        empty.textContent = '没有匹配的词条，换个关键词或切回「全部」分类试试。';
+        box.appendChild(empty);
+        return;
+      }
+      results.forEach(function(e){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'glo-item';
+        btn.setAttribute('data-glo-id', e.id);
+        btn.innerHTML = '<span class="glo-item-head"><b>' + gloEsc(e.term) + '</b><span class="glo-cat">' + gloEsc(e.cat) + '</span></span>' +
+          '<p>' + gloEsc(GlossaryLink.summaryOf(e)) + '</p>';
+        btn.addEventListener('click', function(){ openGlossaryEntry(e.id); });
+        box.appendChild(btn);
+      });
+    }
+    function gloSectionHtml(label, text, supplemented){
+      var h = '<section class="detail-sec"><h3>' + label + '</h3>';
+      String(text || '').split('\n').forEach(function(line){
+        if(line){ h += '<p>' + gloEsc(line) + '</p>'; }
+      });
+      if(supplemented){ h += '<p class="glo-supp-note">本段原条目未展开，内容按词条定义通用补写，供参考。</p>'; }
+      return h + '</section>';
+    }
+    function openGlossaryEntry(id){
+      var entry = null;
+      for(var i = 0; i < GLO.length; i++){ if(GLO[i].id === id){ entry = GLO[i]; break; } }
+      if(!entry){ return; }
+      gloCurrent = entry;
+      var wrap = document.getElementById('glo-detail-wrap');
+      if(!wrap){ return; }
+      var supp = entry.supp || [];
+      var h = '<p class="detail-crumb"><span>' + gloEsc(entry.cat) + '</span><span aria-hidden="true">·</span><span>' + gloEsc(entry.id) + '</span></p>';
+      h += '<h2>' + gloEsc(entry.term) + '</h2>';
+      h += gloSectionHtml('一、概念介绍', entry.concept, supp.indexOf('concept') >= 0);
+      h += gloSectionHtml('二、使用方案', entry.usage, supp.indexOf('usage') >= 0);
+      h += gloSectionHtml('三、注意事项', entry.notes, supp.indexOf('notes') >= 0);
+      if(entry.kw && entry.kw.length){
+        h += '<div class="glo-kw">' + entry.kw.map(function(k){ return '<span>' + gloEsc(k) + '</span>'; }).join('') + '</div>';
+      }
+      var rel = GlossaryLink.relatedPoints(entry, POINTS);
+      if(rel.length){
+        h += '<section class="detail-sec"><h3>相关知识点</h3><div class="doc-actions" style="margin-top:4px">' +
+          rel.map(function(pi){ return '<button class="btn-secondary" type="button" data-glo-kp="' + pi + '">去学：' + gloEsc(POINTS[pi].t) + '</button>'; }).join('') +
+          '</div></section>';
+      }
+      wrap.innerHTML = h;
+      wrap.querySelectorAll('[data-glo-kp]').forEach(function(b){
+        b.addEventListener('click', function(){ openPoint(parseInt(b.getAttribute('data-glo-kp'), 10)); });
+      });
+      show('view-glossary-detail');
+      window.scrollTo(0, 0);
+    }
+    (function bindGlossary(){
+      var input = document.getElementById('glo-input');
+      if(input){
+        input.addEventListener('input', function(){ gloQuery = input.value; renderGlossary(); });
+      }
     })();
 
     /* ================= 数据管理（导出 / 导入 / 清空 · 纯本地文件操作） ================= */
@@ -3518,7 +3691,7 @@
         try {
           var key = 'aipm.appeals.v1';
           var arr = [];
-          try { arr = JSON.parse(window.localStorage.getItem(key) || '[]'); } catch(e){ arr = []; }
+          try { arr = JSON.parse(window.localStorage.getItem(key) || '[]'); if(!Array.isArray(arr)){ arr = []; } } catch(e){ arr = []; }
           arr.push({ ts: Date.now(), date: new Date().toISOString(), totalScore: lastTotal, dimScores: lastScores, reason: reason });
           window.localStorage.setItem(key, JSON.stringify(arr));
         } catch(e){}
