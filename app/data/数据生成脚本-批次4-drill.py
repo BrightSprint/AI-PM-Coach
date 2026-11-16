@@ -1,5 +1,40 @@
-import re, json, sys
-src = open('/home/hatch/workspace/ai-pm-coach-question-bank/expansion/完整扩写版.md', encoding='utf-8').read()
+import re, json, sys, os
+
+# 批次 8（三-2/三-3）布局感知：源文件与产出路径在开发布局与导出包布局下都能解析——
+# 开发布局：源在 ~/workspace/ai-pm-coach-question-bank/ 等处，产出到 ts-spaces 真源；
+# 导出包布局：源在 <包根>/data/（与本脚本同级），产出到 <包根>/app/assets/。
+HERE = os.path.dirname(os.path.abspath(__file__))
+WS = os.path.dirname(HERE)
+
+def _first_existing(cands):
+    for c in cands:
+        if os.path.exists(c):
+            return os.path.normpath(c)
+    return os.path.normpath(cands[0])
+
+EXPANSION_MD = _first_existing([
+    os.path.join(WS, 'ai-pm-coach-question-bank', 'expansion', '完整扩写版.md'),
+    os.path.join(HERE, '完整扩写版.md'),
+    os.path.join(HERE, 'expansion', '完整扩写版.md'),
+])
+QUIZBANK_JS = _first_existing([
+    os.path.join(WS, 'ts-spaces', 'ai-pm-coach', 'assets', 'quiz-bank.js'),
+    os.path.join(HERE, '..', 'app', 'assets', 'quiz-bank.js'),
+])
+QUESTIONS_JSON = _first_existing([
+    os.path.join(WS, 'ai-pm-coach-question-bank', 'output', 'questions.json'),
+    os.path.join(HERE, 'questions.json'),
+])
+COMPLETE_JSON = _first_existing([
+    os.path.join(WS, 'pm-knowledge-bank', 'output', 'complete-questions.json'),
+    os.path.join(HERE, 'complete-questions.json'),
+])
+DRILL_OUT = _first_existing([
+    os.path.join(WS, 'ts-spaces', 'ai-pm-coach', 'assets', 'drill-bank.js'),
+    os.path.join(HERE, '..', 'app', 'assets', 'drill-bank.js'),
+])
+
+src = open(EXPANSION_MD, encoding='utf-8').read()
 lines = src.split('\n')
 # split by ## headers
 entries_raw = []
@@ -64,6 +99,12 @@ for e in entries:
             extra_secs.setdefault(name, 0); extra_secs[name]+=1
             # append extra section content to previous known section if any (keep in explain?) - record separately
             e.setdefault('extra', {})[name] = content.strip()
+    # 一-10 定点修复：G543 为源文件最后一条，其 followup 末尾漏入收尾附录标题块
+    # （第二个分隔线 + 「# 📌 收尾：复习建议与面试策略」标题行，其后无正文），解析时剔除；
+    # 仅处理 G543 这一处已确认伪影，不改动任何其他条目的解析结果。
+    if e.get('gid') == 'G543' and 'followup' in e['sections']:
+        e['sections']['followup'] = re.sub(
+            r'\n\n---\n\n# 📌 收尾：复习建议与面试策略$', '', e['sections']['followup'])
     miss = [k for k in SEG_KEYS if k not in e['sections'] or len(e['sections'].get(k,''))<10]
     if q is None: miss.append('question')
     if miss: missing.append((e['gid'], e['orig50'], e['title'], miss))
@@ -75,22 +116,27 @@ gids = Counter(e['gid'] for e in entries if e['gid'])
 dups = {g:c for g,c in gids.items() if c>1}
 print('gid dups:', dups)
 print('no-gid entries:', [(e['orig50'], e['title']) for e in entries if not e['gid']])
-json.dump({'entries':entries,'missing':missing,'dups':dups}, open('/tmp/drill/parsed.json','w'), ensure_ascii=False)
+# 中间文件放系统临时目录并自动建目录（批次 8 净室验收发现：原写死 /tmp/drill/ 在全新环境下因目录不存在而崩溃）
+import tempfile
+_TMPDIR = os.path.join(tempfile.gettempdir(), 'aipm-drill')
+os.makedirs(_TMPDIR, exist_ok=True)
+_PARSED = os.path.join(_TMPDIR, 'parsed.json')
+json.dump({'entries':entries,'missing':missing,'dups':dups}, open(_PARSED,'w'), ensure_ascii=False)
 import re, json
-d = json.load(open('/tmp/drill/parsed.json'))
+d = json.load(open(_PARSED))
 entries = d['entries']
 
 # dimension/difficulty sources
-qb_src = open('/home/hatch/workspace/ts-spaces/ai-pm-coach/assets/quiz-bank.js', encoding='utf-8').read()
+qb_src = open(QUIZBANK_JS, encoding='utf-8').read()
 qb = json.loads(qb_src[qb_src.index('['):qb_src.rindex(']')+1])
 dim = {}
 for q in qb:
     dim.setdefault(q['src'], (q['dimension'], q['difficulty']))
-q543 = json.load(open('/home/hatch/workspace/ai-pm-coach-question-bank/output/questions.json'))
+q543 = json.load(open(QUESTIONS_JSON))
 for q in q543:
     dim.setdefault('G%d' % q['id'], (q['dimension'], q['difficulty_level']))
 try:
-    cq = json.load(open('/home/hatch/workspace/pm-knowledge-bank/output/complete-questions.json'))
+    cq = json.load(open(COMPLETE_JSON))
     items = cq if isinstance(cq, list) else cq.get('questions', [])
     for q in items:
         s = q.get('src') or q.get('source_id') or ''
@@ -139,5 +185,5 @@ print('entries missing question:', noq)
 nod = [o['gid'] for o in out if not o['dimension']]
 print('entries missing dimension:', nod)
 js = 'var DRILL_BANK=' + json.dumps(out, ensure_ascii=False) + ';\n'
-open('/home/hatch/workspace/ts-spaces/ai-pm-coach/assets/drill-bank.js','w',encoding='utf-8').write(js)
+open(DRILL_OUT,'w',encoding='utf-8').write(js)
 print('drill-bank.js bytes:', len(js.encode('utf-8')))

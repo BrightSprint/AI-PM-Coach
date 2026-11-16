@@ -669,6 +669,11 @@
   #app-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);background:var(--text-strong);color:#fff;font-size:14px;line-height:1.55;padding:11px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(25,24,23,.28);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:80;max-width:min(92vw,520px);text-align:center}
   #app-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   #note-ctx-menu{position:fixed;display:none;z-index:90;width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 28px rgba(43,42,39,.18);padding:4px}
+  #note-sel-btn{position:fixed;display:none;z-index:95;background:var(--primary);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 8px 22px rgba(30,58,95,.35)}
+  #note-sel-btn:hover{background:#16304F}
+  .pillnav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 4px}
+  .pillnav button{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:7px 14px;font-size:13.5px;cursor:pointer}
+  .pillnav button:hover{border-color:var(--primary);color:var(--primary)}
   #note-ctx-menu button{width:100%;background:none;border:0;text-align:left;font-size:14px;color:var(--text);padding:8px 10px;border-radius:6px;min-height:36px}
   #note-ctx-menu button:hover{background:var(--primary-soft);color:var(--primary)}
   .note-editor{display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
@@ -739,16 +744,27 @@
       <span>AI 基础认知</span><span>场景洞察</span><span>产品设计</span><span>数据与评估</span><span>技术协作</span><span>商业与落地</span>
     </div>
 
+    <nav class="pillnav" aria-label="全局导航">
+      <button type="button" data-goto="view-intro">开始测评</button>
+      <button type="button" data-goto="view-learn">学习路径</button>
+      <button type="button" data-goto="view-glossary">知识搜索</button>
+      <button type="button" data-goto="view-wrongbook">错题本</button>
+      <button type="button" data-goto="view-favorites">收藏夹</button>
+      <button type="button" data-goto="view-notes">学习笔记</button>
+      <button type="button" data-goto="view-drill">面试演练</button>
+      <button type="button" data-scrollto="data-mgmt-slot">数据管理</button>
+    </nav>
+
   </main>
 
   <div class="home-extra">
     <div id="resume-slot"></div>
     <div id="my-assessment-slot"></div>
+    <div id="data-mgmt-slot"></div>
     <div id="wrongbook-slot"></div>
     <div id="favorites-slot"></div>
     <div id="drill-slot"></div>
-    <div id="data-mgmt-slot"></div>
-    <p style="text-align:center;margin:2px 0 14px"><button class="text-btn" type="button" data-goto="view-checklist">查看本版自测清单（复测对比与防崩溃加固逐项测试方法）</button></p>
+    <p style="text-align:center;margin:2px 0 14px"><button class="text-btn" type="button" data-goto="view-checklist">查看本版自测清单（全量用例与逐项测试方法）</button></p>
   </div>
 
   <footer class="landing-footer">测评给你诊断，学习带你补上 — 两条路最后都指向同一套六维能力。</footer>
@@ -936,6 +952,7 @@
     </div>
 
     <p class="result-history" id="result-history"></p>
+    <p class="result-history" id="result-review-note"></p>
 
     <div class="appeal-area">
       <button class="appeal-btn" type="button" id="appeal-open">我觉得评分不准</button>
@@ -995,7 +1012,7 @@
 
     <section class="diag-section" aria-label="弱点诊断">
       <h2>弱点诊断 · 逐维看错在哪里</h2>
-      <p>以下诊断由本地规则根据你本轮的真实答题记录拼装：错因逐字引用题库中你所选选项的解析，下一步只给能立刻开始的动作。最弱的维度默认展开，其余点开即看。</p>
+      <p>以下诊断由本地规则根据你本轮的真实答题记录拼装：错因逐字引用题库中你所选选项的解析，下一步只给能立刻开始的动作。最弱的维度默认展开，其余点开即看。在本页选中任意一段文字，点出现的「＋ 加入学习笔记」按钮（或右键）即可存进学习笔记。</p>
       <div class="diag-list" id="diag-list"></div>
     </section>
 
@@ -1026,6 +1043,16 @@
     <h2 class="doc-title">按最容易上手的顺序学</h2>
     <p class="doc-lede">学习模式不按题库的原始顺序刷题。它先把题目<strong>拆成知识点</strong>，再按前置关系排序：<strong>没学概念，就不先考判断；不会评估，就不先谈落地。</strong>你只要从上往下学，每个知识点学完立刻练一道对应的题。</p>
 
+    <nav class="pillnav" aria-label="全局导航">
+      <button type="button" data-goto="view-intro">开始测评</button>
+      <button type="button" data-goto="view-learn">学习路径</button>
+      <button type="button" data-goto="view-glossary">知识搜索</button>
+      <button type="button" data-goto="view-wrongbook">错题本</button>
+      <button type="button" data-goto="view-favorites">收藏夹</button>
+      <button type="button" data-goto="view-notes">学习笔记</button>
+      <button type="button" data-goto="view-drill">面试演练</button>
+      <button type="button" data-scrollto="data-mgmt-slot">数据管理</button>
+    </nav>
     <div class="learn-steps" aria-label="学习路径如何生成">
       <div class="learn-step"><b><span>1</span>拆题</b><p>每道题标注维度、考核点和关键词，抽出它真正考的知识点，而不是只记住题面。</p></div>
       <div class="learn-step"><b><span>2</span>归类</b><p>相同知识点的题目归到一起，同类只留最典型的讲法，重复题变成变式练习。</p></div>
@@ -1041,6 +1068,14 @@
     </div>
 
     <div id="plan-panel-slot"></div>
+
+    <div class="learn-rec" id="review-overview" aria-label="复习队列总览">
+      <div>
+        <b>复习队列</b>
+        <p id="review-overview-desc">队列现在是空的。</p>
+      </div>
+      <button class="btn-secondary" type="button" id="review-overview-btn">查看复习队列</button>
+    </div>
 
     <div class="review-banner" id="review-banner" aria-label="今日可复习">
       <div>
@@ -1061,7 +1096,7 @@
     <div class="learn-rec" aria-label="学习笔记">
       <div>
         <b>学习笔记 · 我摘录的内容</b>
-        <p>在知识点、词条详情和演练页选中任意一段文字，点右键就能加入笔记；也可以在这里查看摘录、补备注，或直接新建一条。</p>
+        <p>在知识点、词条详情、演练页、测评结果、错题本、阶段小测、复习与维度专项测评页面里，选中一段文字，点出现的「＋ 加入学习笔记」按钮（或右键）即可摘抄；也可以在这里查看摘录、补备注，或直接新建一条（答题进行中页面不提供此功能，以免干扰作答）。</p>
       </div>
       <button class="btn-primary" type="button" data-goto="view-notes">打开学习笔记</button>
     </div>
@@ -1203,7 +1238,7 @@
   <main class="learn-wrap">
     <p class="doc-eyebrow">Wrong Book</p>
     <h2 class="doc-title">错题本 · 答错过的题都在这里</h2>
-    <p class="doc-lede">这里汇总了你在历次测评中答错过的题（按题去重，实时从测评记录推导）。每道题都能就地重做：答对就标记为已掌握，答错保持待巩固 — 重做结果只记在错题本里，不改动原来的测评记录。</p>
+    <p class="doc-lede">这里汇总了你在历次测评中答错过的题（按题去重，实时从测评记录推导）。每道题都能就地重做：答对就标记为已掌握，答错保持待巩固 — 重做结果会同步更新错题本与复习队列的状态（全应用同一口径），但不改动原来的测评记录与分数。在本页选中任意一段解析文字，点出现的「＋ 加入学习笔记」按钮（或右键）即可存进学习笔记。</p>
     <div class="wb-stats" id="wb-stats"></div>
     <div class="chip-row wb-filter" id="wb-filter" role="group" aria-label="按维度筛选"></div>
     <div class="wb-list" id="wb-list"></div>
@@ -1530,15 +1565,15 @@
     </div>
 
     <div class="check-group"><h3>十、知识搜索结构化自测用例（GLO）</h3>
-      <div class="check-item" data-testid="GLO-01" data-module="知识搜索"><b>GLO-01 · 词条数据完整性【已执行】</b><p>模块：知识搜索。前置：Node 加载 assets/glossary.js。步骤：统计总数、id 连续性、分类计数、逐条校验三段非空与字段合法性、补遗标记。预期：总数 160（知识库 104 + 补强 20 + supplement2 补遗 23 + supplement3 补遗二期 13）；分类 技术术语 67 / 应用工具 33 / 产品名词 40 / 补强 20；补遗 23 条均带 batch=supplement2、补遗二期 13 条均带 batch=supplement3，且 supp 均为空。断言：<code>BANK.length == 160 &amp;&amp; ids == KB-001..KB-160 &amp;&amp; cats == {67,33,40,20} &amp;&amp; s2.length == 23 &amp;&amp; s3.length == 13</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-01" data-module="知识搜索"><b>GLO-01 · 词条数据完整性【已执行】</b><p>模块：知识搜索。前置：Node 加载 assets/glossary.js。步骤：统计总数、id 连续性、分类计数、逐条校验三段非空与字段合法性、补遗标记。预期：总数 164（知识库 104 + 补强 20 + supplement2 补遗 23 + supplement3 补遗二期 13 + supplement4 补遗三期 4）；分类 技术术语 71 / 应用工具 33 / 产品名词 40 / 补强 20；三批补遗分别带 batch=supplement2/3/4，且 supp 均为空。断言：<code>BANK.length == 164 &amp;&amp; ids == KB-001..KB-164 &amp;&amp; cats == {71,33,40,20} &amp;&amp; s2.length == 23 &amp;&amp; s3.length == 13 &amp;&amp; s4.length == 4</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-02" data-module="知识搜索"><b>GLO-02 · 标题精确优先【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：分别搜「向量数据库」、某词条全名、英文「Transformer」。预期：首条依次为向量数据库词条、该词条本身、补遗 Transformer 条目。断言：<code>search('向量数据库')[0].term 含向量数据库 &amp;&amp; search(term)[0].id == 该条 id &amp;&amp; search('Transformer')[0].batch == 'supplement2'</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-03" data-module="知识搜索"><b>GLO-03 · 排序口径【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：搜「模型」，用引擎 _scoreTerm 复算每条得分并检查标题命中与纯正文命中的相对位置。预期：得分序列非递增；标题含「模型」的条目全部排在纯正文命中之前。断言：<code>scores 单调非增 &amp;&amp; max(titleIdx) &lt; min(bodyOnlyIdx)</code>（实测通过，命中 87 条）。</p></div>
-      <div class="check-item" data-testid="GLO-04" data-module="知识搜索"><b>GLO-04 · 分类筛选【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：空查询分别按补强/技术术语/全部分类检索；再在应用工具分类内搜「模型」。预期：计数依次 20/67/160；分类内结果只含该分类。断言：<code>supp.length == 20 &amp;&amp; tech.length == 67 &amp;&amp; all.length == 160 &amp;&amp; inCat.every(cat == '应用工具')</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-04" data-module="知识搜索"><b>GLO-04 · 分类筛选【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：空查询分别按补强/技术术语/全部分类检索；再在应用工具分类内搜「模型」。预期：计数依次 20/71/164；分类内结果只含该分类。断言：<code>supp.length == 20 &amp;&amp; tech.length == 71 &amp;&amp; all.length == 164 &amp;&amp; inCat.every(cat == '应用工具')</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-05" data-module="知识搜索"><b>GLO-05 · 正文命中与无结果【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：取 KB-031 注意事项首 4 字作查询；再搜无意义字符串。预期：前者结果含 KB-031；后者为空数组。断言：<code>search(probe).some(id == 'KB-031') &amp;&amp; search('zzzz不存在的词xyz').length == 0</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-06" data-module="知识搜索"><b>GLO-06 · 相关知识点匹配【已执行】</b><p>模块：知识搜索。前置：GlossaryLink.relatedPoints 与 27 个知识点标题。步骤：对自带 kp 的条目、对无 kp 的合成条目（词条名/关键词与某知识点标题重合）、对完全无关的合成条目分别求相关知识点。预期：依次为 [kp]、[该知识点下标]、空数组（链不上不硬凑）。断言：<code>relatedPoints(withKp) == [kp] &amp;&amp; relatedPoints(fake)[0] == 0 &amp;&amp; relatedPoints(orphan).length == 0</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-07" data-module="知识搜索"><b>GLO-07 · 列表摘要【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：对首条词条取 summaryOf。预期：摘要等于概念段首句（至第一个句号），超长时截断加省略号。断言：<code>summary.length &lt;= 65 &amp;&amp; concept.startsWith(summary 去省略号)</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="GLO-08" data-module="知识搜索"><b>GLO-08 · 搜索界面流程【UI 流程 · 已执行】</b><p>模块：知识搜索。前置：无头 Chromium 打开应用。步骤：学习页点「打开知识搜索」→ 看默认列表 → 搜「向量数据库」打开详情 → 点「相关知识点」按钮 → 返回后打开一条 supp 非空词条 → 切分类到「补强」。预期：默认恰列 160 条；详情三段齐全（概念介绍/使用方案/注意事项）；相关知识点按钮跳到对应知识点学习页；补写段下方注记数与该条 supp 段数一致；补强分类恰 20 条且全为补强。断言：<code>shown == 160 &amp;&amp; heads 含三段 &amp;&amp; jump 后 view == view-learn-detail &amp;&amp; suppNotes == supp.length &amp;&amp; catShown == 20</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="GLO-09" data-module="知识搜索"><b>GLO-09 · 零存储零网络【已执行】</b><p>模块：知识搜索。前置：同 GLO-08，开启请求与存储监控（快照取在相关知识点跳转之前，跳转写 learn 键属学习功能自身持久化）。步骤：完成检索/筛选/详情浏览全流程后对比十键集合。预期：知识搜索本身不新增任何 localStorage key、不发外部请求、无 pageerror。断言：<code>tenKeysBefore deepEqual tenKeysAfter &amp;&amp; external.length == 0 &amp;&amp; pageErrors.length == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-08" data-module="知识搜索"><b>GLO-08 · 搜索界面流程【UI 流程 · 已执行】</b><p>模块：知识搜索。前置：无头 Chromium 打开应用。步骤：学习页点「打开知识搜索」→ 看默认列表 → 搜「向量数据库」打开详情 → 点「相关知识点」按钮 → 返回后打开一条 supp 非空词条 → 切分类到「补强」。预期：默认恰列 164 条；详情三段齐全（概念介绍/使用方案/注意事项）；相关知识点按钮跳到对应知识点学习页；补写段下方注记数与该条 supp 段数一致；补强分类恰 20 条且全为补强。断言：<code>shown == 164 &amp;&amp; heads 含三段 &amp;&amp; jump 后 view == view-learn-detail &amp;&amp; suppNotes == supp.length &amp;&amp; catShown == 20</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-09" data-module="知识搜索"><b>GLO-09 · 零存储零网络【已执行】</b><p>模块：知识搜索。前置：同 GLO-08，开启请求与存储监控（快照取在相关知识点跳转之前，跳转写 learn 键属学习功能自身持久化）。步骤：完成检索/筛选/详情浏览全流程后对比十二键集合。预期：知识搜索本身不新增任何 localStorage key、不发外部请求、无 pageerror。断言：<code>twelveKeysBefore deepEqual twelveKeysAfter &amp;&amp; external.length == 0 &amp;&amp; pageErrors.length == 0</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-10" data-module="知识搜索"><b>GLO-10 · 补遗二期 13 条逐条可搜【已执行】</b><p>模块：知识搜索（补遗二期）。前置：同 GLO-01，词条含 supplement3 的 KB-148..KB-160（应用工具 6：LangGraph/LangChain/Dify/LlamaIndex/多智能体框架/推理部署工具；技术术语 7：ReAct/规划与反思/机器学习总览/SFT/温度与采样参数/Benchmark/可观测性与链路追踪）。步骤：逐条以标题词（如「LangGraph」「Dify」「ReAct」「Benchmark」）检索，再逐条以一个关键词（如「状态图」「低代码」「自我反思」「LangSmith」）检索。预期：标题检索首条即该词条；关键词检索结果含该词条；13 条三段齐全、分类与 id 顺延正确。断言：<code>13 条 titleProbe 首条命中 &amp;&amp; 13 条 kwProbe 结果含本条 &amp;&amp; KB-148..160 分类 == [应用工具×6, 技术术语×7]</code>（实测通过）。</p></div>
     </div>
 
@@ -1551,8 +1586,8 @@
       <div class="check-item" data-testid="ABN-06" data-module="异常"><b>ABN-06 · 突然关闭时演练自评保留【已执行】</b><p>模块：异常。前置：演练中自评一条为「不会」。步骤：直接关页 → 重开进演练首页读统计。预期：aipm.drill.v1 逐字不变；统计显示已练 ≥1。断言：<code>before == after &amp;&amp; stats 已练 &gt;= 1</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="ABN-07" data-module="异常"><b>ABN-07 · 突然关闭时阶段小测无半成品【已执行】</b><p>模块：异常。前置：记录 aipm.stagequiz.v1 当前值（可为空）。步骤：开始阶段小测答 2 题 → 直接关页 → 重开再读该键。预期：开始前/答题中/重开后三值逐字一致——小测只在完成结算时落盘，中途关闭不产生半成品记录。断言：<code>before == mid == after</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="ABN-08" data-module="异常"><b>ABN-08 · 断电强杀模拟（进程 SIGKILL）【已执行 · 含平台观察】</b><p>模块：异常。前置：持久化浏览器配置中造数：完整测评一轮 + 学习标记 + 演练自评 + 种子键（共 7 个已有键）。步骤：pkill -9 强杀全部 Chromium 进程 → 同配置重启打开应用 → 再开始一轮测评答 4 题后二次强杀 → 重启。预期（断言）：重开不白屏（落地页正常渲染）；存活键均可 JSON 解析；题库就绪校验不误报、可立即开始测评并作答；二次强杀后进行中进度或逐字完整（恢复卡正确）或整批干净缺失，绝不出现撕裂半截值。观察（非断言）：逐字存活键数逐轮记录——localStorage 由 Chromium 存储服务异步批提交，强杀时未提交的尾批写入可能整批丢失（实测静置 2–8 秒、刷新、尾随写均不能可靠强制提交，JS 层无落盘 API），属平台机制而非应用缺陷；本轮实测阶段一存活 3/7（attempts/snapshots/review 完整）、阶段二进度整批干净缺失。正常关闭路径的逐字完整性由 ABN-04..07 覆盖；防丢的正式手段是「数据管理 → 导出全部数据」备份。断言：<code>view == view-landing &amp;&amp; parseOk &amp;&amp; quizRestartable &amp;&amp; (progIntact || progCleanAbsent)</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="ABN-09" data-module="异常"><b>ABN-09 · 存储损坏逐 key 兜底【已执行】</b><p>模块：异常。前置：无头 Chromium 打开应用。步骤：对 10 个键逐一注入 6 种坏值（坏 JSON、纯数字、纯字符串、null、错型数组、截断 JSON），每次注入后整页刷新。预期：60 种组合下均不白屏、无 pageerror、回到落地页且标题正常。断言：<code>∀key, ∀bad: view == view-landing &amp;&amp; title 非空 &amp;&amp; newPageErrors == 0</code>（实测通过。本轮曾发现 attempts/snapshots 在「合法 JSON 但类型错误」时抛错，已给两个加载函数加数组+对象条目过滤并复测通过，申诉提交处同类隐患一并加固）。</p></div>
-      <div class="check-item" data-testid="ABN-10" data-module="异常"><b>ABN-10 · 存储损坏全 key 同时损坏【已执行】</b><p>模块：异常。前置：同 ABN-09。步骤：10 个键同时注入坏 JSON → 刷新 → 开始测评并答 1 题。预期：不白屏、无 pageerror、测评可正常启动作答（题库就绪校验不误报）。断言：<code>view == view-landing &amp;&amp; quiz 可启动 &amp;&amp; errors == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="ABN-09" data-module="异常"><b>ABN-09 · 存储损坏逐 key 兜底【已执行】</b><p>模块：异常。前置：无头 Chromium 打开应用。步骤：对 10 个键逐一注入 6 种坏值（坏 JSON、纯数字、纯字符串、null、错型数组、截断 JSON），每次注入后整页刷新。预期：60 种组合下均不白屏、无 pageerror、回到落地页且标题正常。（批次 8 注：本条执行于批次 5 之前，当时键集为 10 键；现行键集为 12 键，脚本按现行 12 键执行同一矩阵，口径不变。）断言：<code>∀key, ∀bad: view == view-landing &amp;&amp; title 非空 &amp;&amp; newPageErrors == 0</code>（实测通过。本轮曾发现 attempts/snapshots 在「合法 JSON 但类型错误」时抛错，已给两个加载函数加数组+对象条目过滤并复测通过，申诉提交处同类隐患一并加固）。</p></div>
+      <div class="check-item" data-testid="ABN-10" data-module="异常"><b>ABN-10 · 存储损坏全 key 同时损坏【已执行】</b><p>模块：异常。前置：同 ABN-09。步骤：10 个键同时注入坏 JSON → 刷新 → 开始测评并答 1 题。预期：不白屏、无 pageerror、测评可正常启动作答（题库就绪校验不误报）。（批次 8 注：同 ABN-09，现行脚本按 12 键执行。）断言：<code>view == view-landing &amp;&amp; quiz 可启动 &amp;&amp; errors == 0</code>（实测通过）。</p></div>
     </div>
 
     <div class="check-group"><h3>十二、批次 5 结构化自测用例（收藏 FAV / 数据管理 DAT-12）</h3>
@@ -1561,7 +1596,7 @@
       <div class="check-item" data-testid="FAV-03" data-module="收藏"><b>FAV-03 · 刷新后持久化</b><p>模块：收藏。前置：答题页已收藏当前题。步骤：整页刷新 → 重新进入答题页定位同一题（或直接查存储与收藏夹）。预期：存储条目仍在；收藏夹含该题条目。断言：<code>afterReload stored.length == 1 &amp;&amp; favItems == 1</code>。</p></div>
       <div class="check-item" data-testid="FAV-04" data-module="收藏"><b>FAV-04 · 收藏夹倒序与字段</b><p>模块：收藏。前置：直接写入两条收藏（ts 一早一晚，qid 取题库前两题）。步骤：打开收藏夹读 .fav-item 顺序与文案。预期：按 ts 倒序（晚收藏在前）；每条含题干、维度、难度与收藏时间。断言：<code>items[0] 含晚收藏题干 &amp;&amp; items[1] 含早收藏题干 &amp;&amp; 每条含维度/难度/收藏于</code>。</p></div>
       <div class="check-item" data-testid="FAV-05" data-module="收藏"><b>FAV-05 · 展开详情与题库逐字一致</b><p>模块：收藏。前置：收藏夹有 1 条。步骤：点条目头部展开 .fav-detail。预期：四选项文本、正确答案标注与解析与 QUIZ_BANK 对应题逐字一致。断言：<code>detail 含 A-D 四选项原文 &amp;&amp; 含正确答案解析 distractor_analysis[answer]</code>。</p></div>
-      <div class="check-item" data-testid="FAV-06" data-module="收藏"><b>FAV-06 · 重做即时判对错且不写测评记录</b><p>模块：收藏。前置：收藏夹有 1 条，记录 aipm.attempts.v1 原始字节。步骤：展开重做 → 先选错误选项看判错 → （新条目）选正确选项看判对。预期：.fav-redo-verdict 即时显示对错与解析；attempts 字节不变、无新测评记录。断言：<code>verdict 含答错/答对文案 &amp;&amp; attemptsAfter == attemptsBefore</code>。</p></div>
+      <div class="check-item" data-testid="FAV-06" data-module="收藏"><b>FAV-06 · 重做即时判对错且不写测评记录</b><p>模块：收藏。前置：收藏夹有 1 条，记录 aipm.attempts.v1 原始字节。步骤：展开重做 → 先选错误选项看判错 → （新条目）选正确选项看判对。预期：.fav-redo-verdict 即时显示对错与解析；attempts 字节不变、无新测评记录。（批次 8 口径更新：收藏重做的对错结果按二-1 统一口径联动错题本/复习队列状态，联动本身由 LNK-03 验证；本条「不写 attempts」的断言不变。）断言：<code>verdict 含答错/答对文案 &amp;&amp; attemptsAfter == attemptsBefore</code>。</p></div>
       <div class="check-item" data-testid="FAV-07" data-module="收藏"><b>FAV-07 · 收藏夹内取消收藏</b><p>模块：收藏。前置：收藏夹有 1 条。步骤：点该条 .fav-remove-btn。预期：条目消失、#fav-empty 空状态出现、存储清空。断言：<code>favItems == 0 &amp;&amp; favEmpty 可见 &amp;&amp; stored.length == 0</code>。</p></div>
       <div class="check-item" data-testid="FAV-08" data-module="收藏"><b>FAV-08 · 跨页同步</b><p>模块：收藏。前置：完成一轮测评到达结果页且至少答错 1 题。步骤：答题页先收藏当前题 → 答完到结果页查同题 .fav-toggle 状态；在结果页取消某题收藏 → 打开收藏夹复查。预期：结果页同题按钮为已收藏；在结果页取消后收藏夹同步消失该条。断言：<code>resultToggle.dataset.state == 'on' &amp;&amp; 取消后 favItems 不含该题</code>。</p></div>
       <div class="check-item" data-testid="FAV-09" data-module="收藏"><b>FAV-09 · favorites 坏值矩阵</b><p>模块：收藏。前置：无头 Chromium 打开应用。步骤：依次向 aipm.favorites.v1 注入非数组字符串/数字/null/条目缺字段/未知 qid 后刷新并打开收藏夹。预期：均不白屏、按空或过滤处理、pageerror 为 0。断言：<code>∀bad: view 正常 &amp;&amp; favItems &lt;= 合法条数 &amp;&amp; newPageErrors == 0</code>。</p></div>
@@ -1585,6 +1620,8 @@
       <div class="check-item" data-testid="NOTE-12" data-module="学习笔记"><b>NOTE-12 · 笔记页字段与排序</b><p>模块：学习笔记。前置：写入两条 updatedAt 一新一旧的笔记。步骤：打开笔记页读 .note-item 顺序与字段。预期：按 updatedAt 倒序；每条含来源 chip（.note-source）、正文（.note-text）与创建时间/更新时间显示。断言：<code>items[0] 为较新条 &amp;&amp; 每条 source/text/time 均非空</code>。</p></div>
       <div class="check-item" data-testid="NOTE-13" data-module="学习笔记"><b>NOTE-13 · notes 坏值矩阵</b><p>模块：学习笔记。前置：无头 Chromium 打开应用。步骤：依次向 aipm.notes.v1 注入非数组字符串/数字/null/条目缺 text/条目缺 id/混合合法与非法条目后刷新并打开笔记页。预期：均不白屏；缺 text/id 的条目被剔除、合法条目保留、pageerror 为 0。断言：<code>∀bad: view 正常 &amp;&amp; noteItems == 合法条数 &amp;&amp; newPageErrors == 0</code>。</p></div>
     </div>
+
+    <div class="check-group"><h3>十四、批次 8 结构化自测用例（全量复审 57 条修复：联动 LNK / 导入 DAT-14..19 / 异常 ABN-11..12 / 键盘 KBD / 冲突 PLN-13·SET-09·PLN-14 / 边界 REV-07..09·STG-07·DRL-09·WRB-08..10 / 内容 GLO-11·MAP-01 / 体验 NAV-01·PRC-01·NOTE-14·FAV-11..12·DAT-15..16 / 补充验证 DAT-20·SUB-01）</h3>      <div class="check-item" data-testid="LNK-01" data-module="状态联动"><b>LNK-01 · 联动 · 错题本重做双向迁移（二-1）</b><p>模块：状态联动。前置：某题在错题本待巩固且在复习队列 stage 0（到期日 D）。步骤：在错题本重做答对 → 查两键；再重做答错 → 查两键。预期：答对后 wrongbook.mastered 含该题且 review 升 stage 1、到期日按 +3 天；答错后 mastered 移除且 review 回 stage 0。断言：<code>mastered 与 review.stage/due 均按联动口径迁移 &amp;&amp; attempts 字节不变</code>。</p></div>      <div class="check-item" data-testid="LNK-02" data-module="状态联动"><b>LNK-02 · 联动 · 复习作答同步错题本（二-1）</b><p>模块：状态联动。前置：某错题在复习队列中到期。步骤：复习中答对 → 查 wrongbook；再到期答错 → 查 wrongbook。预期：复习答对同时把错题本该题记为已掌握；答错清除已掌握。断言：<code>review 答对后 mastered 含该题 &amp;&amp; 答错后不含</code>。</p></div>      <div class="check-item" data-testid="LNK-03" data-module="状态联动"><b>LNK-03 · 联动 · 收藏重做与诊断重做（二-1）</b><p>模块：状态联动。前置：收藏一题并使其进入复习队列。步骤：收藏夹重做答对 → 查两键；结果页诊断区重做同题答错 → 查两键。预期：两处重做都走同一联动：答对记已掌握+队列进阶，答错清除+回退；attempts/快照不新增。断言：<code>两场景后 mastered/review 与口径一致 &amp;&amp; attempts.length 不变</code>。</p></div>      <div class="check-item" data-testid="WRB-08" data-module="错题本"><b>WRB-08 · 未精确匹配题的知识点入口明示（二-2）</b><p>模块：错题本。前置：构造一条错题记录，其题在统一口径下零关键词命中（由数据层筛出）。步骤：打开错题本看该条按钮并点击。预期：按钮文案为「本题暂未精确匹配知识点 · 去学本维路径」，不出现具体知识点名；点击跳学习页并定位到该维阶段卡。断言：<code>btn 文案含未精确匹配 &amp;&amp; 点击后 view == view-learn</code>。</p></div>      <div class="check-item" data-testid="WRB-09" data-module="错题本"><b>WRB-09 · 错题本空状态可达（G-09c）</b><p>模块：错题本。前置：无任何测评记录。步骤：从学习页 doc-actions 入口打开错题本。预期：页面正常打开、显示空状态文案、无 pageerror。断言：<code>view == view-wrongbook &amp;&amp; 空状态可见 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="NOTE-14" data-module="学习笔记"><b>NOTE-14 · 笔记覆盖新页面（二-3）</b><p>模块：学习笔记。前置：分别造数据进入结果页、错题本、阶段小测、复习、维度专项测评五页。步骤：每页选中一段文字 → 点浮动按钮（或右键菜单）加入。预期：五页均可加入且 source.type 依次为 result/wrongbook/stagequiz/review/dimtest；答题页（view-quiz）选区不出现浮动按钮、右键不被拦截。断言：<code>五页 notes 各 +1 且 type 正确 &amp;&amp; quiz 页 selBtn 不可见</code>。</p></div>      <div class="check-item" data-testid="DAT-14" data-module="数据管理"><b>DAT-14 · 导入清洁与计数一致（G-01）</b><p>模块：数据管理。前置：构造含重复/未知 qid 收藏、重复 id 笔记、重复 attemptId 快照的备份。步骤：走页面导入 → 看概览计数 → 打开收藏夹/笔记页数条目 → 删一条重复 id 曾存在的笔记。预期：导入后概览计数与两页实际条数一致；删除只删一条不连带。断言：<code>counts.favorites == favItems &amp;&amp; counts.notes == noteItems &amp;&amp; 删除后 notes 恰减 1</code>。</p></div>      <div class="check-item" data-testid="DAT-15" data-module="数据管理"><b>DAT-15 · 大数据量渲染（G-02）</b><p>模块：数据管理。前置：直接写入笔记 150 条 + 快照 120 条。步骤：打开笔记页与落地页成长曲线。预期：两处渲染完成不卡死、无 pageerror，条数与写入一致。断言：<code>noteItems == 150 &amp;&amp; 曲线点数 == 120 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="FAV-11" data-module="收藏"><b>FAV-11 · 收藏全量 634 条（G-02）</b><p>模块：收藏。前置：把题库全部 634 题写入收藏。步骤：打开收藏夹。预期：渲染 634 条、无 pageerror。断言：<code>favItems == 634 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="DAT-16" data-module="数据管理"><b>DAT-16 · 清空后各页空状态（G-09d）</b><p>模块：数据管理。前置：造齐 12 键数据。步骤：数据管理清空全部（确认）→ 逐页打开错题本/收藏夹/笔记/演练/学习页。预期：12 键全无；各页显示各自空状态、无 pageerror。断言：<code>keys == 0 &amp;&amp; 各页空状态可见 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="DAT-17" data-module="数据管理"><b>DAT-17 · 跨环境导入往返（G-10）</b><p>模块：数据管理。前置：两个隔离浏览器上下文 A/B，A 中造齐 12 键数据并导出。步骤：B 中导入 A 的备份 → 逐键对比。预期：B 的 12 键与 A 逐字一致。断言：<code>∀key: B[key] == A[key]</code>。</p></div>      <div class="check-item" data-testid="DAT-18" data-module="数据管理"><b>DAT-18 · BOM 备份可导入（G-10）</b><p>模块：数据管理。前置：给合法备份文件内容加 UTF-8 BOM 前缀。步骤：走页面导入。预期：导入成功（BOM 自动剥离后解析），数据落盘。断言：<code>导入成功提示 &amp;&amp; 目标键已写入</code>。</p></div>      <div class="check-item" data-testid="DAT-19" data-module="数据管理"><b>DAT-19 · 未来版本拒绝与快照去重（G-12）</b><p>模块：数据管理。前置：构造 version=2 的备份、含未知额外键的 v1 备份、含重复 attemptId 快照的备份。步骤：逐个走页面导入。预期：v2 被明确拒绝且不写任何键；未知键被忽略不落盘；快照按 attemptId 去重保留最后一条。断言：<code>v2 后 keys 不变 &amp;&amp; 未知键不在 localStorage &amp;&amp; snapshots 去重后条数正确</code>。</p></div>      <div class="check-item" data-testid="ABN-11" data-module="异常"><b>ABN-11 · 配额写满保存失败如实反馈（G-03）</b><p>模块：异常。前置：用大字符串把 localStorage 填至接近配额。步骤：尝试收藏一题、加一条笔记、完成一轮测评。预期：出现「存储空间不足」如实提示（window.__aipmSaveFailed 置位）；收藏按钮状态与落盘一致（不假报已收藏）；清出空间后刷新，应用状态自洽、无 pageerror。断言：<code>saveFailed == true &amp;&amp; toast 含存储空间不足 &amp;&amp; 收藏按钮状态 == 落盘状态</code>。</p></div>      <div class="check-item" data-testid="ABN-12" data-module="异常"><b>ABN-12 · 双标签并发写入（G-13）</b><p>模块：异常。前置：同一上下文开两个标签页。步骤：两页交替收藏/加笔记/答题。预期：后写覆盖先写（last-writer-wins），任何时刻刷新后数据可正常加载、无损坏、无 pageerror（口径如实记录：本应用为单机单标签设计，不做跨标签合并）。断言：<code>∀key 可解析 &amp;&amp; 各页可打开 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="KBD-01" data-module="键盘"><b>KBD-01 · 浮动按钮键盘可达加笔记（G-05）</b><p>模块：键盘。前置：打开知识点详情页。步骤：拖动选中一段文字（纯键盘选区依赖浏览器光标浏览模式，非应用可控）→ 等浮动按钮出现 → 仅用 Tab 逐个移动焦点直至按钮 → Enter。预期：笔记 +1 且 text 为所选内容。断言：<code>selBtn 可见 &amp;&amp; Tab 可达 &amp;&amp; notes +1</code>。</p></div>      <div class="check-item" data-testid="KBD-02" data-module="键盘"><b>KBD-02 · Shift+F10 右键菜单路径（G-05）</b><p>模块：键盘。前置：知识点详情页已有选区。步骤：按 Shift+F10 → Tab 到菜单按钮 → Enter。预期：菜单出现、笔记 +1。断言：<code>menu 可见 &amp;&amp; notes +1</code>。</p></div>      <div class="check-item" data-testid="KBD-03" data-module="键盘"><b>KBD-03 · 主要流程键盘可达抽查（G-05）</b><p>模块：键盘。前置：落地页。步骤：仅用 Tab/Enter 依次进入学习页、打开一个知识点、标记已学、返回。预期：全程可完成、焦点可见。断言：<code>learned 含该点 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="PLN-13" data-module="学习计划"><b>PLN-13 · quizcfg 冲突组合规整（G-07）</b><p>模块：学习计划。前置：Node 加载 goal-link。步骤：normalizeQuizCfg 喂入 pending+custom 并存、weakestNotice 伪维度字符串、plan.pointIds 越界、pinnedFirst 不在计划内等冲突组合。预期：伪维度 notice 被清为 null；其余字段按各自规则规整、不抛错。断言：<code>notice == null &amp;&amp; 其余字段合法 &amp;&amp; 无异常</code>。</p></div>      <div class="check-item" data-testid="SET-09" data-module="测评设置"><b>SET-09 · 设置冲突组合 UI 流程（G-07）</b><p>模块：测评设置。前置：已有自定义计划且无测评成绩。步骤：点「只学最弱维」→ 确认框出现 → 取消（pending 不置位）→ 再点 → 确认（pending 置位）。预期：与二-8 口径一致。断言：<code>取消后 weakestPending != true &amp;&amp; 确认后 == true</code>。</p></div>      <div class="check-item" data-testid="PLN-14" data-module="学习计划"><b>PLN-14 · 待生效替换自定义计划的确认（二-8）</b><p>模块：学习计划。前置：已有自定义计划、无成绩。步骤：同 SET-09 的确认路径走完首次测评。预期：首次测评后计划被最弱维计划替换，且点选时已有过明示确认。断言：<code>plan.mode == 'weakest' &amp;&amp; 确认框曾出现</code>。</p></div>      <div class="check-item" data-testid="REV-07" data-module="复习"><b>REV-07 · 闰年边界日期链（G-08）</b><p>模块：复习。前置：Node 加载 review-link。步骤：以 2024-02-28 为今天连推 applyReviewResult 五级。预期：到期日依次跨 02-29 正确落在 03 月。断言：<code>链上日期与手工推演一致</code>。</p></div>      <div class="check-item" data-testid="REV-08" data-module="复习"><b>REV-08 · 时区稳健（G-08）</b><p>模块：复习。前置：Node 加载 review-link。步骤：在 TZ=UTC、Asia/Shanghai、Pacific/Kiritimati（UTC+14）三时区下各跑 todayStr/addDaysStr/applyReviewResult 同一用例。预期：三时区结果逐字一致。断言：<code>三时区输出 deepEqual</code>。</p></div>      <div class="check-item" data-testid="REV-09" data-module="复习"><b>REV-09 · 复习总览常驻（五-1 / 二-6）</b><p>模块：复习。前置：空队列与有队列（无到期）两种状态。步骤：打开学习页看 #review-overview。预期：两种状态下总览块都可见：空队列显示总数 0 的说明；有队列显示总数与最近到期日；按钮可进入复习页。断言：<code>overview 可见 &amp;&amp; 文案含总数 &amp;&amp; 点击后 view == view-review</code>。</p></div>      <div class="check-item" data-testid="STG-07" data-module="阶段小测"><b>STG-07 · 小题池抽题（G-09a）</b><p>模块：阶段小测。前置：Node 加载 review-link。步骤：pickStageQuestions 以 3 题题池请求抽 5 题。预期：返回 3 题、不重复、不抛错（真实题库最小阶段题池为 33 题，此分支以逻辑层覆盖）。断言：<code>picked.length == 3 &amp;&amp; 无重复 id</code>。</p></div>      <div class="check-item" data-testid="DRL-09" data-module="面试演练"><b>DRL-09 · 弱项筛选池为空（G-09b）</b><p>模块：面试演练。前置：把 547 条演练全部自评为「掌握」。步骤：演练首页切「只练弱项」筛选。预期：显示空状态文案、不报错。断言：<code>空状态可见 &amp;&amp; errors == 0</code>。</p></div>      <div class="check-item" data-testid="GLO-11" data-module="知识搜索"><b>GLO-11 · 补遗三期与口径统一（一-1/2/3/5）</b><p>模块：知识搜索。前置：Node 加载 glossary.js 与知识点数据。步骤：搜「精确率」「F1」「AUC」「CNN」「Docker」「余弦相似度」；搜「AB测试」与「MCP」；比对 KB-025、KB-114 与知识点 1 的四要素表述。预期：新词均命中对应新条目；AB 测试两条可区分（索引条指向 KB-097）；MCP 两条标题可区分且互指；四要素三处同为「角色/任务/约束/示例」。断言：<code>六个探针均命中预期条目 &amp;&amp; 四要素三处一致</code>。</p></div>      <div class="check-item" data-testid="NAV-01" data-module="导航"><b>NAV-01 · 药丸导航可达（五-2）</b><p>模块：导航。前置：落地页与学习页。步骤：逐个点击两页 .pillnav 的 7 个视图按钮（另有第 8 个「数据管理」锚点按钮，见 NAV-02）。预期：每个视图按钮都到达对应视图。断言：<code>∀btn: 点击后 activeView == 目标视图</code>。</p></div>      <div class="check-item" data-testid="PRC-01" data-module="学习"><b>PRC-01 · 练习题再练一次（五-5）</b><p>模块：学习。前置：某知识点一题已作答并落盘。步骤：点「再练一次（不计入记录）」→ 故意选另一个答案。预期：即时反馈出现；learnState.practice 中该题记录仍是首次作答、复习队列不新增。断言：<code>practice 记录未变 &amp;&amp; review 键未变</code>。</p></div>      <div class="check-item" data-testid="MAP-01" data-module="知识点映射"><b>MAP-01 · 映射口径统一（一-4）</b><p>模块：知识点映射。前置：Node 加载题库与三引擎。步骤：分别用 review-link 口径与练习口径统计 634 题可映射数；深比较三处 POINTS_BY_DIM。预期：两口径同为 380 题（59.9%）；三处映射表逐字一致——全应用只保留一个覆盖率口径。断言：<code>coverageA == coverageB == 380 &amp;&amp; 三表 deepEqual</code>。</p></div>      <div class="check-item" data-testid="VW-01" data-module="视口"><b>VW-01 · 视口矩阵无横向溢出（G-06）</b><p>模块：视口。前置：应用已打开。步骤：在 1280×800 / 768×1024 / 390×844 三种视口下逐个打开落地、测评介绍、学习、知识点详情、知识搜索、词条详情、错题本、收藏夹、学习笔记、面试演练共 11 个视图。预期：每个视图文档宽度不超过视口宽度、无横向滚动条。断言：<code>三视口 × 11 视图 scrollWidth 均 ≤ innerWidth+1（脚本 自测脚本-批次8-视口.js）</code>。</p></div>      <div class="check-item" data-testid="DAT-20" data-module="数据管理"><b>DAT-20 · 导入后最近成绩口径与横幅刷新（二-4）</b><p>模块：数据管理。前置：构造备份——含一次完整测评（六维分、最弱维为数据与评估）与一次更晚的子集测评（仅 3 维）。步骤：走页面导入 → 不刷新直接进学习页看推荐横幅 → 再刷新重进学习页对比。预期：未刷新时横幅即按最近完整测评的最弱维（数据与评估）呈现，不被最后的子集测评带偏；刷新后口径一致。断言：<code>导入后 rec 文案含数据与评估 &amp;&amp; 刷新前后 rec 文案相同</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>      <div class="check-item" data-testid="WRB-10" data-module="错题本"><b>WRB-10 · 错题本条目收藏按钮（二-5）</b><p>模块：错题本。前置：有一道错题在错题本中。步骤：打开错题本看条目操作区 → 点收藏按钮 → 查 aipm.favorites.v1。预期：条目带与结果页同款的收藏切换按钮（.fav-toggle），点击后该题落盘到收藏。断言：<code>favBtn 存在 &amp;&amp; favorites 含该 qid</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>      <div class="check-item" data-testid="FAV-12" data-module="收藏"><b>FAV-12 · 收藏夹条目去学知识点（二-5）</b><p>模块：收藏。前置：收藏一题（已精确匹配知识点）。步骤：打开收藏夹看条目操作区 → 点「去学知识点」。预期：条目带与错题本同口径的知识点跳转按钮，点击直达对应知识点学习页。断言：<code>pointBtn 存在且文案含「去学知识点「」 &amp;&amp; 点击后 view == view-learn-detail</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>      <div class="check-item" data-testid="SUB-01" data-module="子集测评"><b>SUB-01 · 子集测评结果页文案与行为一致（二-7）</b><p>模块：子集测评。前置：测评设置选 3 个维度共 12 题。步骤：完整答完进入结果页，通读结果页文案。预期：结果页不出现「已切换到学习模式」「路径会优先带你补」等承诺（子集测评不更新学习推荐），改为如实说明本次只测了部分维度。断言：<code>到达 view-result &amp;&amp; 结果文本不含两句承诺文案</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>      <div class="check-item" data-testid="NAV-02" data-module="导航"><b>NAV-02 · 数据管理直达锚点（五-6）</b><p>模块：导航。前置：学习页。步骤：点药丸导航第 8 个按钮「数据管理」。预期：回到落地页且数据管理区滚入视口（导出/导入/清空按钮可见），不再需要长滚动翻找。断言：<code>view == view-landing &amp;&amp; data-mgmt-slot 进入视口</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>      <div class="check-item" data-testid="REV-10" data-module="复习"><b>REV-10 · 未来时间戳快照的复测区呈现（G-08 残项）</b><p>模块：复习。前置：写入一条 ts 在未来 2 天的快照（模拟改钟/时区漂移）。步骤：刷新打开落地页看「我的测评」复测区。预期：正常渲染，天数差为负时落入「建议再过几天」分支，不出现负天数或 NaN。断言：<code>homeText 不含 NaN 与「-N 天」 &amp;&amp; 含「建议再过几天」</code>（脚本 自测脚本-批次8-补充验证.js）。</p></div>    </div>
   </main>
 </section>
 
@@ -1604,6 +1641,7 @@
 
 <div id="app-toast" role="status" aria-live="polite"></div>
 <div id="note-ctx-menu"><button type="button" id="note-ctx-add">加入学习笔记</button></div>
+<button type="button" id="note-sel-btn">＋ 加入学习笔记</button>
 
 <script src="assets/quiz-bank.js"></script>
 <script src="assets/cat-engine.js"></script>
@@ -1621,6 +1659,7 @@
     var suppressQuizReset = false;
     function activateView(id){
       views.forEach(function(v){ v.classList.toggle('active', v.id === id); });
+      hideNoteSelBtn();
       window.scrollTo(0,0);
     }
     function show(id){
@@ -1645,6 +1684,30 @@
     document.querySelectorAll('[data-goto]').forEach(function(el){
       el.addEventListener('click', function(){ show(el.getAttribute('data-goto')); });
     });
+    /* 批次 8（五-6）：数据管理位于落地页底部，药丸导航加一个直达锚点，避免长滚动翻找 */
+    document.querySelectorAll('[data-scrollto]').forEach(function(el){
+      el.addEventListener('click', function(){
+        show('view-landing');
+        setTimeout(function(){ var t = document.getElementById(el.getAttribute('data-scrollto')); if(t){ t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, 60);
+      });
+    });
+
+    /* ---------- 批次 8（G-03）：存储写入如实反馈 ----------
+       此前全部 save* 为 try/catch 空捕获：配额写满时静默失败、界面还会假报成功。
+       现在统一走 storageWrite：写失败（多为配额不足）时置位 window.__aipmSaveFailed
+       并节流弹出如实提示；收藏切换 / 加笔记等关键路径按真实落盘结果呈现状态。 */
+    var saveFailNotifiedAt = 0;
+    function reportSaveFailure(){
+      window.__aipmSaveFailed = true;
+      var now = Date.now();
+      if(now - saveFailNotifiedAt < 5000){ return; }
+      saveFailNotifiedAt = now;
+      showToast('本地存储空间不足，本次操作未能保存。请到「数据管理」导出备份、清理一些数据后再试。');
+    }
+    function storageWrite(key, str){
+      try { window.localStorage.setItem(key, str); return true; }
+      catch(e){ reportSaveFailure(); return false; }
+    }
 
     /* ================= Quiz (real bank + simplified CAT) =================
        抽题 / 难度调整 / 能力分计算全部在独立的 CAT 引擎里实现
@@ -1677,7 +1740,7 @@
       return GoalLink.normalizeQuizCfg(raw, DIM_NAMES);
     }
     function saveQuizCfg(cfg){
-      try { window.localStorage.setItem(QUIZCFG_KEY, JSON.stringify(cfg)); } catch(e){}
+      storageWrite(QUIZCFG_KEY, JSON.stringify(cfg));
     }
     var quizCfg = loadQuizCfg();
     var quizTotal = quizCfg.count;
@@ -1778,7 +1841,15 @@
     /* ---------- 能力快照 ---------- */
     var SNAP_KEY = 'aipm.snapshots.v1';
     function loadSnapshots(){
-      try { var raw = window.localStorage.getItem(SNAP_KEY); var v = raw ? JSON.parse(raw) : []; return Array.isArray(v) ? v.filter(function(s){ return s && typeof s === 'object'; }) : []; }
+      try {
+        var raw = window.localStorage.getItem(SNAP_KEY); var v = raw ? JSON.parse(raw) : [];
+        /* 批次 8（衍生加固 D-2）：快照的定义就是六维分快照——缺合法 dimScores（6 个数字）的条目
+           会让对比雷达/成长曲线渲染抛错，加载时直接过滤（应用自身产生的快照恒带 dimScores）。 */
+        return Array.isArray(v) ? v.filter(function(s){
+          return s && typeof s === 'object' && Array.isArray(s.dimScores) && s.dimScores.length === 6 &&
+            s.dimScores.every(function(x){ return typeof x === 'number'; });
+        }) : [];
+      }
       catch(e){ return []; }
     }
     function saveSnapshot(snap){
@@ -1786,7 +1857,7 @@
         var arr = loadSnapshots();
         if(arr.some(function(s){ return s.attemptId && s.attemptId === snap.attemptId; })){ return false; }
         arr.push(snap);
-        window.localStorage.setItem(SNAP_KEY, JSON.stringify(arr));
+        if(!storageWrite(SNAP_KEY, JSON.stringify(arr))){ return false; }
         return true;
       } catch(e){ return false; }
     }
@@ -1794,17 +1865,15 @@
     var PROG_KEY = 'aipm.inprogress.v1';
     function saveInProgress(){
       if(!catSession || !currentDecision){ return; }
-      try {
-        window.localStorage.setItem(PROG_KEY, JSON.stringify({
-          attemptId: currentAttemptId,
-          startedAt: quizStartedAt,
-          current: current,
-          records: records,
-          total: quizTotal,
-          cfg: quizCfg,
-          engine: catSession.serializeState()
-        }));
-      } catch(e){}
+      storageWrite(PROG_KEY, JSON.stringify({
+        attemptId: currentAttemptId,
+        startedAt: quizStartedAt,
+        current: current,
+        records: records,
+        total: quizTotal,
+        cfg: quizCfg,
+        engine: catSession.serializeState()
+      }));
     }
     function loadInProgress(){
       try { var raw = window.localStorage.getItem(PROG_KEY); return raw ? JSON.parse(raw) : null; }
@@ -1990,6 +2059,7 @@
         window.localStorage.setItem(STORE_KEY, JSON.stringify(arr));
         return true;
       } catch(e){
+        reportSaveFailure();
         memoryFallback.push(attempt);
         return false;
       }
@@ -2088,8 +2158,19 @@
         '本轮答对 ' + rightAll + ' / ' + totalAll + ' 题 · 总用时 ' + (mins ? mins + ' 分 ' : '') + secs + ' 秒 · ' +
         (saved ? '答题记录已存入本机（刷新页面不会丢失）' : '当前环境无法写入本地存储，本轮记录仅保留在本次打开期间') +
         (isFull ? '' : ' · 本次为子集测评（' + testedDims.join('、') + '），不生成能力快照');
-      document.getElementById('result-actions-note').textContent =
-        '已切换到学习模式：路径会优先带你补' + DIMS[minI].name + '（' + scores[minI] + ' 分），同时保留从基础学起的完整顺序。';
+      /* 批次 8（二-7）：只有完整测评才写「已切换到学习模式 / 优先补最弱维」——
+         子集测评没有全维分数、推荐横幅也不刷新，文案按实际行为写。 */
+      document.getElementById('result-actions-note').textContent = isFull
+        ? '已切换到学习模式：路径会优先带你补' + DIMS[minI].name + '（' + scores[minI] + ' 分），同时保留从基础学起的完整顺序。'
+        : '本次是子集测评（' + testedDims.join('、') + '），学习路径的优先推荐保持上次完整测评的结果不变。';
+      /* 批次 8（二-6 配套）：明确告知本轮错题已入复习队列，与学习页常驻队列总览呼应 */
+      var rrNote = document.getElementById('result-review-note');
+      if(rrNote){
+        var wrongThis = totalAll - rightAll;
+        rrNote.textContent = wrongThis > 0
+          ? '本轮答错的 ' + wrongThis + ' 道题已加入复习队列：之后在学习页的「复习队列」里能看到队列总数与到期时间，到期会提醒你复习（不复习也没有任何惩罚）。'
+          : '本轮全部答对，没有新题加入复习队列。';
+      }
       /* 雷达图只在六维全测时绘制；子集测评显示说明，不画不完整的雷达 */
       var radarCard = document.querySelector('.result-grid .radar-card');
       var subsetNote = document.getElementById('radar-subset-note');
@@ -2268,6 +2349,14 @@
         wrap.appendChild(next);
         return wrap;
       }
+      if(block.pointMatched === false){
+        /* 批次 8（二-2）：未精确命中任何关键词时明示粗略推荐，只给本维路径入口，不点名回落知识点 */
+        next.appendChild(document.createTextNode('→ 这道题暂未精确匹配到知识点，先按本维度（' + dg.dimension + '）的路径整体补：到学习模式打开本维阶段，从该阶段第一个知识点学起。 '));
+        var goStage = document.createElement('button'); goStage.type = 'button'; goStage.textContent = '去学习模式';
+        goStage.addEventListener('click', function(){ show('view-learn'); });
+        next.appendChild(goStage); wrap.appendChild(next);
+        return wrap;
+      }
       next.appendChild(document.createTextNode('→ 先去学习模式学「' + POINTS[block.pointIndex].t + '」，学完做里面的练习题验证。 '));
       var go = document.createElement('button'); go.type = 'button'; go.textContent = '打开这个知识点';
       (function(pi){ go.addEventListener('click', function(){ openPoint(pi); }); })(block.pointIndex);
@@ -2292,6 +2381,12 @@
           });
           var right = letter === q.answer;
           if(!right){ b.classList.add('is-wrong'); }
+          /* 批次 8（二-1）：诊断重做的对错结果同样走统一联动（错题本 + 复习队列） */
+          if(q.id != null){
+            var linkedDg = ReviewLink.applyRedoLinkage(loadWrongbook(), loadReview(), q.id, right, new Date().toISOString(), ReviewLink.todayStr());
+            saveWrongbook(linkedDg.wrongbook);
+            saveReview(linkedDg.review);
+          }
           var da = q.distractor_analysis || {};
           explain.innerHTML = '';
           var head = document.createElement('b'); head.textContent = right ? '答对了。' : '这题选 ' + q.answer + '。';
@@ -2453,7 +2548,7 @@
       } catch(e){}
     }
     function saveLearn(){
-      try { window.localStorage.setItem(LEARN_KEY, JSON.stringify(learnState)); } catch(e){}
+      storageWrite(LEARN_KEY, JSON.stringify(learnState));
     }
     /* ---------- 学习计划（当前目标）：存入 learn.v1 的 plan 字段，不新建键 ---------- */
     function pointStages(){ return POINTS.map(function(p){ return p.s; }); }
@@ -2641,6 +2736,11 @@
           setWeakestPending(false);
           renderPlanPanel();
         } else {
+          /* 批次 8（二-8）：已有自定义计划时，待生效会在首次测评后整体替换它——
+             覆盖发生在未来、界面上又看不见，因此在点选当下先明示确认，不静默替换 */
+          if(userPlan && plan.mode === 'custom'){
+            if(!window.confirm('你已有一份自定义学习计划。预选「只学最弱维」后，完成首次完整测评时，它会被按最弱维生成的计划整体替换。确定要预选吗？')){ return; }
+          }
           setWeakestPending(true);
           renderPlanPanel();
         }
@@ -2923,6 +3023,7 @@
         var opts = document.createElement('div'); opts.className = 'practice-opts';
         var explain = document.createElement('div'); explain.className = 'practice-explain';
         var saved = savedForPoint[qkey];
+        var freeRound = false;
         function showExplain(selIdx){
           explain.innerHTML = '';
           var hb = document.createElement('b'); hb.textContent = (selIdx === ansIdx) ? '答对了。' : '这题选 ' + letters[ansIdx] + '。';
@@ -2940,10 +3041,17 @@
             if(saved.sel === oi && oi !== ansIdx){ b.classList.add('is-wrong'); }
           }
           b.addEventListener('click', function(){
-            if(learnState.practice[pi] && learnState.practice[pi][qkey]){ return; }
+            if(!freeRound && learnState.practice[pi] && learnState.practice[pi][qkey]){ return; }
             var all = opts.querySelectorAll('.p-opt');
             all.forEach(function(o, j){ o.disabled = true; if(j === ansIdx){ o.classList.add('is-correct'); } });
             if(oi !== ansIdx){ b.classList.add('is-wrong'); }
+            if(freeRound){
+              /* 批次 8（五-5）：「再练一次」是自由练习——只给即时反馈，
+                 不覆盖首次作答记录、不重复入复习队列 */
+              freeRound = false;
+              showExplain(oi);
+              return;
+            }
             if(!learnState.practice[pi]){ learnState.practice[pi] = {}; }
             learnState.practice[pi][qkey] = { sel: oi, correct: oi === ansIdx };
             savedForPoint = learnState.practice[pi];
@@ -2955,7 +3063,21 @@
           opts.appendChild(b);
         });
         if(saved){ showExplain(saved.sel); }
-        card.appendChild(opts); card.appendChild(explain); wrap.appendChild(card);
+        card.appendChild(opts); card.appendChild(explain);
+        if(saved){
+          /* 批次 8（五-5）：已答过的题给「再练一次」入口，首次记录仍为正式记录 */
+          var retryBtn = document.createElement('button'); retryBtn.type = 'button'; retryBtn.className = 'text-btn practice-retry';
+          retryBtn.textContent = '再练一次（不计入记录）';
+          retryBtn.addEventListener('click', function(){
+            freeRound = true;
+            var all = opts.querySelectorAll('.p-opt');
+            all.forEach(function(o){ o.disabled = false; o.classList.remove('is-correct'); o.classList.remove('is-wrong'); });
+            explain.classList.remove('show'); explain.innerHTML = '';
+            retryBtn.style.display = 'none';
+          });
+          card.appendChild(retryBtn);
+        }
+        wrap.appendChild(card);
       }
       renderOne('hand', '入门题 · 手写题', p.q.stem, p.q.options, p.q.ans, function(){ return p.q.explain + '<br><span>考核点 / 关键词：' + p.q.kw + '</span>'; });
       bankQs.forEach(function(q, qi){
@@ -3091,7 +3213,7 @@
       catch(e){ return {}; }
     }
     function saveDrillStore(){
-      try { window.localStorage.setItem(DrillLink.DRILL_KEY, JSON.stringify(drillStore)); } catch(e){}
+      storageWrite(DrillLink.DRILL_KEY, JSON.stringify(drillStore));
     }
     var drillStore = loadDrillStore();
     var drillFilter = { dim: null, mode: 'all' };
@@ -3416,20 +3538,23 @@
       var snaps = readStored('aipm.snapshots.v1');
       var appeals = readStored('aipm.appeals.v1');
       var learn = readStored('aipm.learn.v1');
-      var favs = readStored('aipm.favorites.v1');
-      var notes = readStored('aipm.notes.v1');
       return {
         attempts: Array.isArray(att) ? att.length : 0,
         snapshots: Array.isArray(snaps) ? snaps.length : 0,
         learned: (learn && Array.isArray(learn.learned)) ? learn.learned.length : 0,
         appeals: Array.isArray(appeals) ? appeals.length : 0,
-        favorites: Array.isArray(favs) ? favs.length : 0,
-        notes: Array.isArray(notes) ? notes.length : 0
+        /* 批次 8（G-01）：收藏/笔记计数走加载器（已过滤重复/未知条目并按 id 去重），
+           与收藏夹、笔记页的实际渲染条数同口径，不再按原始数组长度计数。 */
+        favorites: loadFavorites().length,
+        notes: loadNotes().length
       };
     }
     function validateImport(obj){
       if(!obj || typeof obj !== 'object' || Array.isArray(obj)){ return '文件不是有效的备份 JSON 对象'; }
       if(obj.version == null){ return '备份缺少 version 版本字段'; }
+      /* 批次 8（G-12）：高于当前支持版本（v1）的备份拒绝导入，避免新格式被旧版静默吞掉；
+         data 区里本应用不认识的额外键会被忽略、不写入（见 confirmImport 只写 DATA_KEYS）。 */
+      if(typeof obj.version === 'number' && obj.version > 1){ return '备份版本为 v' + obj.version + '，高于本应用支持的 v1，请先升级应用再导入'; }
       if(!obj.data || typeof obj.data !== 'object' || Array.isArray(obj.data)){ return '备份缺少 data 数据区'; }
       for(var i = 0; i < DATA_REQUIRED_KEYS.length; i++){
         if(!Object.prototype.hasOwnProperty.call(obj.data, DATA_REQUIRED_KEYS[i])){ return '备份缺少数据键 ' + DATA_REQUIRED_KEYS[i]; }
@@ -3486,7 +3611,7 @@
         var reader = new FileReader();
         reader.onload = function(){
           var obj = null;
-          try { obj = JSON.parse(String(reader.result || '')); } catch(e){
+          try { obj = JSON.parse(String(reader.result || '').replace(/^\uFEFF/, '')); } catch(e){
             pendingImport = null; dataMsg = '导入失败：文件不是合法的 JSON，原有数据没有被改动。'; dataMsgErr = true; renderDataMgmt(); return;
           }
           var err = validateImport(obj);
@@ -3503,14 +3628,53 @@
       });
       input.click();
     }
+    /* 批次 8（G-01 / G-12）：导入写入前的条目清洁——
+       收藏按加载器规则过滤（未知 qid / 重复 qid / ts 非数字剔除）；笔记按 id 去重（保留第一条）
+       并剔除形状不合法条目；快照按 attemptId 去重（保留最后一条）。保证导入后概览计数与各页渲染一致。 */
+    function sanitizeImportValue(key, v){
+      if(!Array.isArray(v)){ return v; }
+      if(key === 'aipm.favorites.v1'){
+        var byId = bankById(); var seenQ = {};
+        return v.filter(function(f){
+          if(!f || typeof f !== 'object' || !byId[f.qid] || typeof f.ts !== 'number'){ return false; }
+          var k = String(f.qid);
+          if(seenQ[k]){ return false; }
+          seenQ[k] = true;
+          return true;
+        });
+      }
+      if(key === 'aipm.notes.v1'){
+        var seenN = {};
+        return v.filter(function(n){
+          if(!n || typeof n !== 'object' || typeof n.text !== 'string' || n.id == null || String(n.id) === ''){ return false; }
+          var k2 = String(n.id);
+          if(seenN[k2]){ return false; }
+          seenN[k2] = true;
+          return true;
+        });
+      }
+      if(key === 'aipm.snapshots.v1'){
+        var lastIdx = {};
+        v.forEach(function(s, i){ if(s && typeof s === 'object' && s.attemptId != null){ lastIdx[String(s.attemptId)] = i; } });
+        return v.filter(function(s, i){
+          if(!s || typeof s !== 'object'){ return false; }
+          /* 批次 8（D-2）：缺合法六维分的快照导入时剔除，与 loadSnapshots 同口径 */
+          if(!(Array.isArray(s.dimScores) && s.dimScores.length === 6 && s.dimScores.every(function(x){ return typeof x === 'number'; }))){ return false; }
+          if(s.attemptId == null){ return true; }
+          return lastIdx[String(s.attemptId)] === i;
+        });
+      }
+      return v;
+    }
     function confirmImport(){
       if(!pendingImport){ return; }
       DATA_KEYS.forEach(function(key){
         try {
           var v = Object.prototype.hasOwnProperty.call(pendingImport.data, key) ? pendingImport.data[key] : [];
+          v = sanitizeImportValue(key, v);
           if(v === null){ window.localStorage.removeItem(key); }
           else { window.localStorage.setItem(key, JSON.stringify(v)); }
-        } catch(e){}
+        } catch(e){ reportSaveFailure(); }
       });
       pendingImport = null;
       /* 刷新内存态：学习进度与最近成绩都以导入后的存储为准 */
@@ -3522,13 +3686,20 @@
         learned = {};
         learnState.learned.forEach(function(i){ learned[i] = true; });
         currentPoint = (typeof learnState.lastPoint === 'number' && POINTS[learnState.lastPoint]) ? learnState.lastPoint : 0;
+        /* 批次 8（二-4）：与冷启动 restoreLearnRec 同一口径——回溯最近一次带完整六维分的
+           attempt（最后一次是子集测评时不置 null），并立即刷新学习推荐横幅与计划面板。 */
         var arr = loadAttempts();
-        lastDimScores = (arr.length && arr[arr.length - 1].dimScores) ? arr[arr.length - 1].dimScores : null;
+        lastDimScores = null;
+        for(var i2 = arr.length - 1; i2 >= 0; i2--){
+          if(arr[i2].dimScores){ lastDimScores = arr[i2].dimScores; break; }
+        }
+        if(lastDimScores){ updateLearnRec(lastDimScores); }
       } catch(e){}
       dataMsg = '导入完成，页面状态已按导入的数据刷新。';
       dataMsgErr = false;
       renderHomeExtras();
       renderPath();
+      renderPlanPanel();
       window.scrollTo(0, 0);
     }
     function confirmClear(){
@@ -3917,13 +4088,15 @@
         if(!reason){ ta.focus(); ta.style.borderColor = '#C9741F'; return; }
         ta.style.borderColor = '';
         submit.disabled = true; submit.textContent = '提交中...';
-        try {
-          var key = 'aipm.appeals.v1';
-          var arr = [];
-          try { arr = JSON.parse(window.localStorage.getItem(key) || '[]'); if(!Array.isArray(arr)){ arr = []; } } catch(e){ arr = []; }
-          arr.push({ ts: Date.now(), date: new Date().toISOString(), totalScore: lastTotal, dimScores: lastScores, reason: reason });
-          window.localStorage.setItem(key, JSON.stringify(arr));
-        } catch(e){}
+        var key = 'aipm.appeals.v1';
+        var arr = [];
+        try { arr = JSON.parse(window.localStorage.getItem(key) || '[]'); if(!Array.isArray(arr)){ arr = []; } } catch(e){ arr = []; }
+        arr.push({ ts: Date.now(), date: new Date().toISOString(), totalScore: lastTotal, dimScores: lastScores, reason: reason });
+        if(!storageWrite(key, JSON.stringify(arr))){
+          /* 批次 8（G-03）：写失败时不假报成功，保留表单让用户稍后重试（提示已由 storageWrite 弹出） */
+          submit.disabled = false; submit.textContent = '提交反馈';
+          return;
+        }
         form.classList.remove('show');
         if(done){ done.classList.add('show'); }
         submit.disabled = false; submit.textContent = '提交反馈';
@@ -4083,19 +4256,19 @@
       return ReviewLink.normalizeWrongbook(readStored(WRONGBOOK_KEY));
     }
     function saveWrongbook(wb){
-      try { window.localStorage.setItem(WRONGBOOK_KEY, JSON.stringify(wb)); } catch(e){}
+      storageWrite(WRONGBOOK_KEY, JSON.stringify(wb));
     }
     function loadStageQuizAll(){
       return ReviewLink.normalizeStageQuiz(readStored(STAGEQUIZ_KEY));
     }
     function saveStageQuizAll(all){
-      try { window.localStorage.setItem(STAGEQUIZ_KEY, JSON.stringify(all)); } catch(e){}
+      storageWrite(STAGEQUIZ_KEY, JSON.stringify(all));
     }
     function loadReview(){
       return ReviewLink.normalizeReview(readStored(REVIEW_KEY));
     }
     function saveReview(rv){
-      try { window.localStorage.setItem(REVIEW_KEY, JSON.stringify(rv)); } catch(e){}
+      storageWrite(REVIEW_KEY, JSON.stringify(rv));
     }
     /* 复习队列种子同步：测评错题 + 知识点练习答错题（阶段小测错题在小测结算时直接入队）。
        只新增、不覆盖已有条目，按题 id 去重；多次调用幂等。 */
@@ -4151,26 +4324,30 @@
 
     /* ---------- 错题本视图 ---------- */
     var wbFilterDim = '全部';
+    /* 批次 8（二-9）：统计区独立成函数——重做答题后整区重渲（含各维 chip），不再只改前两个数字 */
+    function renderWbStats(){
+      var statsEl = document.getElementById('wb-stats');
+      if(!statsEl){ return; }
+      var st = ReviewLink.wrongStats(ReviewLink.deriveWrongBook(loadAttempts()), loadWrongbook());
+      statsEl.innerHTML = '';
+      function statChip(html){
+        var sp = document.createElement('span'); sp.innerHTML = html; statsEl.appendChild(sp);
+      }
+      statChip('待巩固 <b>' + st.pending + '</b> 道');
+      statChip('已掌握 <b>' + st.mastered + '</b> 道');
+      statChip('错题总数 <b>' + st.total + '</b> 道');
+      DIMS.forEach(function(d){
+        var dd = st.byDim[d.name];
+        if(dd){ statChip(d.name + ' <b>' + dd.total + '</b> 道（待巩固 ' + dd.pending + '）'); }
+      });
+    }
     function renderWrongbook(){
       syncReviewSeeds();
       var byId = bankById();
       var entries = ReviewLink.deriveWrongBook(loadAttempts());
       var wb = loadWrongbook();
       var st = ReviewLink.wrongStats(entries, wb);
-      var statsEl = document.getElementById('wb-stats');
-      if(statsEl){
-        statsEl.innerHTML = '';
-        function statChip(html){
-          var sp = document.createElement('span'); sp.innerHTML = html; statsEl.appendChild(sp);
-        }
-        statChip('待巩固 <b>' + st.pending + '</b> 道');
-        statChip('已掌握 <b>' + st.mastered + '</b> 道');
-        statChip('错题总数 <b>' + st.total + '</b> 道');
-        DIMS.forEach(function(d){
-          var dd = st.byDim[d.name];
-          if(dd){ statChip(d.name + ' <b>' + dd.total + '</b> 道（待巩固 ' + dd.pending + '）'); }
-        });
-      }
+      renderWbStats();
       var filterEl = document.getElementById('wb-filter');
       if(filterEl){
         filterEl.innerHTML = '';
@@ -4243,19 +4420,31 @@
         item.appendChild(ans);
         var redoRec = wb.redo[e.questionId];
         if(redoRec){
-          var rr = document.createElement('p'); rr.className = 'wb-detail';
+          var rr = document.createElement('p'); rr.className = 'wb-detail wb-redo-rec';
           rr.textContent = '上次重做：' + String(redoRec.lastAt || '').slice(0, 10) + (redoRec.lastCorrect ? ' 答对' : ' 答错');
           item.appendChild(rr);
         }
         var acts = document.createElement('div'); acts.className = 'wb-actions';
         var redoBtn = document.createElement('button'); redoBtn.type = 'button'; redoBtn.className = 'sq-btn'; redoBtn.textContent = '重做这道题';
         acts.appendChild(redoBtn);
-        /* 映射知识点（按 POINT_KEYWORDS 最长关键词匹配，与诊断/练习同口径） */
+        /* 批次 8（二-5）：错题本条目补收藏按钮，与结果页/小测复盘同款 */
+        acts.appendChild(makeFavButton(e.questionId));
+        /* 批次 8（二-2）：映射改用可区分命中质量的 matchPointDetailed——
+           精确命中才写具体知识点名；零命中时明示未精确匹配、只跳本维学习路径，不再静默回落。 */
         if(typeof DIAG_DATA !== 'undefined'){
-          var pi = GoalLink.matchQuestionPoint(q, DIM_INDEX[q.dimension], DIAG_DATA.POINT_KEYWORDS);
+          var md = ReviewLink.matchPointDetailed(q, DIM_INDEX[q.dimension], DIAG_DATA.POINT_KEYWORDS);
           var goBtn = document.createElement('button'); goBtn.type = 'button'; goBtn.className = 'wb-point-btn';
-          goBtn.textContent = '去学知识点「' + POINTS[pi].t + '」';
-          goBtn.addEventListener('click', function(){ openPoint(pi); });
+          if(md.bestLen > 0){
+            goBtn.textContent = '去学知识点「' + POINTS[md.pointIndex].t + '」';
+            (function(pi){ goBtn.addEventListener('click', function(){ openPoint(pi); }); })(md.pointIndex);
+          } else {
+            goBtn.textContent = '本题暂未精确匹配知识点 · 去学本维路径';
+            (function(di){ goBtn.addEventListener('click', function(){
+              show('view-learn');
+              var el = document.getElementById('stage-' + di);
+              if(el){ el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            }); })(DIM_INDEX[q.dimension]);
+          }
           acts.appendChild(goBtn);
         }
         item.appendChild(acts);
@@ -4286,9 +4475,11 @@
           });
           var right = letter === q.answer;
           if(!right){ b.classList.add('is-wrong'); }
-          /* 掌握流转只写 aipm.wrongbook.v1，绝不回写 attempts */
-          var wb2 = ReviewLink.applyRedo(loadWrongbook(), q.id, right, new Date().toISOString());
-          saveWrongbook(wb2);
+          /* 批次 8（二-1）：掌握流转走统一联动（错题本 + 复习队列同口径），绝不回写 attempts */
+          var linked = ReviewLink.applyRedoLinkage(loadWrongbook(), loadReview(), q.id, right, new Date().toISOString(), ReviewLink.todayStr());
+          saveWrongbook(linked.wrongbook);
+          saveReview(linked.review);
+          var wb2 = linked.wrongbook;
           var da = q.distractor_analysis || {};
           explain.innerHTML = '';
           var hb = document.createElement('b');
@@ -4301,13 +4492,14 @@
             statusEl.className = 'wb-status ' + (mAt ? 'is-done' : 'is-pending');
             statusEl.textContent = mAt ? ('已掌握 · ' + String(mAt).slice(0, 10)) : '待巩固';
           }
-          /* 顶部统计随掌握状态刷新（重渲染整个错题本会丢失本题反馈，故只更新统计区） */
-          var stEl = document.getElementById('wb-stats');
-          if(stEl){
-            var st2 = ReviewLink.wrongStats(ReviewLink.deriveWrongBook(loadAttempts()), wb2);
-            var chips = stEl.querySelectorAll('span');
-            if(chips[0]){ chips[0].innerHTML = '待巩固 <b>' + st2.pending + '</b> 道'; }
-            if(chips[1]){ chips[1].innerHTML = '已掌握 <b>' + st2.mastered + '</b> 道'; }
+          /* 批次 8（二-9）：统计区整区重渲（总数/已掌握/各维 chip 一并刷新），
+             条目自身的「上次重做」行同步更新，不必切筛选或重进页面 */
+          renderWbStats();
+          var itemEl = box.closest ? box.closest('.wb-item') : null;
+          if(itemEl){
+            var rec = wb2.redo[q.id];
+            var rrEl = itemEl.querySelector('.wb-redo-rec');
+            if(rec && rrEl){ rrEl.textContent = '上次重做：' + String(rec.lastAt || '').slice(0, 10) + (rec.lastCorrect ? ' 答对' : ' 答错'); }
           }
         });
         opts.appendChild(b);
@@ -4459,12 +4651,30 @@
       var banner = document.getElementById('review-banner');
       if(!banner){ return; }
       var due = reviewDueList();
-      if(!due.length){ banner.classList.remove('show'); return; }
-      document.getElementById('review-banner-title').textContent = '今日可复习 ' + due.length + ' 题';
-      document.getElementById('review-banner-desc').textContent = '这些是你之前答错过的题，现在正好到了适合再看一遍的时间。复习或不复习都可以，不复习也不会有任何惩罚，题目会继续留在队列里。';
-      banner.classList.add('show');
+      if(due.length){
+        document.getElementById('review-banner-title').textContent = '今日可复习 ' + due.length + ' 题';
+        document.getElementById('review-banner-desc').textContent = '这些是你之前答错过的题，现在正好到了适合再看一遍的时间。复习或不复习都可以，不复习也不会有任何惩罚，题目会继续留在队列里。';
+        banner.classList.add('show');
+      } else { banner.classList.remove('show'); }
+      /* 批次 8（二-6 / 五-1）：复习队列总览常驻——无到期题时入口也不消失，
+         队列总数 / 最近到期日 / 今日到期数随时可见；按钮进入复习页（无到期题时显示说明）。 */
+      var ov = document.getElementById('review-overview-desc');
+      if(ov){
+        var rvAll = loadReview();
+        var qids = Object.keys(rvAll);
+        if(!qids.length){
+          ov.textContent = '队列现在是空的。测评、阶段小测或练习里答错的题会自动进来，按遗忘曲线在 +1/+3/+7/+14/+30 天提醒你复习。';
+        } else {
+          var nextDue = qids.map(function(k){ return rvAll[k].due; }).sort()[0];
+          ov.textContent = '队列中共 ' + qids.length + ' 道题' +
+            (due.length ? '，其中今日到期 ' + due.length + ' 道' : '，今日没有到期的题') +
+            '；最近到期日：' + nextDue + '。复习或不复习都可以，不复习也不会有任何惩罚。';
+        }
+      }
     }
     document.getElementById('review-start-btn').addEventListener('click', function(){ startReviewSession(); });
+    var rvOvBtn = document.getElementById('review-overview-btn');
+    if(rvOvBtn){ rvOvBtn.addEventListener('click', function(){ startReviewSession(); }); }
     var rv = { list: [], idx: 0, answered: false, results: [] };
     function startReviewSession(){
       var byId = bankById();
@@ -4511,8 +4721,11 @@
             if(LETTERS[j] === q.answer){ o.classList.add('selected'); }
           });
           if(!right){ btn.classList.add('is-wrong'); btn.style.borderColor = '#C9741F'; btn.style.background = '#FBF1E6'; }
-          /* 复习场景即时反馈 + 间隔迁移立即落盘 */
-          saveReview(ReviewLink.applyReviewResult(loadReview(), q.id, right, ReviewLink.todayStr()));
+          /* 批次 8（二-1）：复习迁移走统一联动——复习队列进阶/回退的同时，
+             错题本的已掌握状态同步迁移（同一口径单一事实来源），立即落盘 */
+          var linkedRv = ReviewLink.applyRedoLinkage(loadWrongbook(), loadReview(), q.id, right, new Date().toISOString(), ReviewLink.todayStr());
+          saveWrongbook(linkedRv.wrongbook);
+          saveReview(linkedRv.review);
           rv.results.push({ qid: q.id, correct: right });
           var da = q.distractor_analysis || {};
           var entry = ReviewLink.normalizeReview(readStored(REVIEW_KEY))[q.id];
@@ -4563,8 +4776,9 @@
 
     /* ================= 批次 5：收藏 / 学习笔记 =================
        纯本地功能：收藏存 aipm.favorites.v1（[{qid, ts}]），笔记存
-       aipm.notes.v1；零联网、零 LLM。收藏重做只在本页内判对错，
-       绝不写 aipm.attempts.v1 或任何测评记录。 */
+       aipm.notes.v1；零联网、零 LLM。收藏重做在本页内判对错，
+       绝不写 aipm.attempts.v1 或能力快照；批次 8（二-1）起，收藏重做的
+       对错结果按统一口径联动错题本 / 复习队列状态（applyRedoLinkage）。 */
     var FAV_KEY = 'aipm.favorites.v1';
     var NOTES_KEY = 'aipm.notes.v1';
     function loadFavorites(){
@@ -4584,7 +4798,7 @@
       });
     }
     function saveFavorites(list){
-      try { window.localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch(e){}
+      return storageWrite(FAV_KEY, JSON.stringify(list));
     }
     function favIndexOf(list, qid){
       for(var i = 0; i < list.length; i++){ if(String(list[i].qid) === String(qid)){ return i; } }
@@ -4596,10 +4810,10 @@
     function toggleFavorite(qid){
       var list = loadFavorites();
       var idx = favIndexOf(list, qid);
-      if(idx >= 0){ list.splice(idx, 1); saveFavorites(list); return false; }
-      list.push({ qid: qid, ts: Date.now() });
-      saveFavorites(list);
-      return true;
+      if(idx >= 0){ list.splice(idx, 1); saveFavorites(list); }
+      else { list.push({ qid: qid, ts: Date.now() }); saveFavorites(list); }
+      /* 批次 8（G-03）：返回落盘后重读的真实状态，写失败时按钮不会假报「已收藏」 */
+      return isFavorite(qid);
     }
     function removeFavorite(qid){
       saveFavorites(loadFavorites().filter(function(f){ return String(f.qid) !== String(qid); }));
@@ -4735,6 +4949,23 @@
       var redoBtn = document.createElement('button'); redoBtn.type = 'button'; redoBtn.className = 'sq-btn fav-redo-btn'; redoBtn.textContent = '重做本题';
       var removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'sq-btn fav-remove-btn'; removeBtn.textContent = '取消收藏';
       acts.appendChild(redoBtn); acts.appendChild(removeBtn);
+      /* 批次 8（二-5）：收藏夹条目补「去学知识点」跳转，与错题本同口径（含未精确命中的明示回落） */
+      if(typeof DIAG_DATA !== 'undefined'){
+        var mdF = ReviewLink.matchPointDetailed(q, DIM_INDEX[q.dimension], DIAG_DATA.POINT_KEYWORDS);
+        var goBtnF = document.createElement('button'); goBtnF.type = 'button'; goBtnF.className = 'wb-point-btn';
+        if(mdF.bestLen > 0){
+          goBtnF.textContent = '去学知识点「' + POINTS[mdF.pointIndex].t + '」';
+          (function(pi){ goBtnF.addEventListener('click', function(){ openPoint(pi); }); })(mdF.pointIndex);
+        } else {
+          goBtnF.textContent = '本题暂未精确匹配知识点 · 去学本维路径';
+          (function(di){ goBtnF.addEventListener('click', function(){
+            show('view-learn');
+            var el = document.getElementById('stage-' + di);
+            if(el){ el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+          }); })(DIM_INDEX[q.dimension]);
+        }
+        acts.appendChild(goBtnF);
+      }
       item.appendChild(acts);
       var redoBox = document.createElement('div'); redoBox.className = 'fav-redo redo-box';
       redoBtn.addEventListener('click', function(){
@@ -4766,7 +4997,11 @@
           });
           var right = letter === q.answer;
           if(!right){ b.classList.add('is-wrong'); }
-          /* 收藏重做只在本页即时判对错：不写 attempts、不写任何测评 / 错题本记录 */
+          /* 批次 8（二-1）：收藏重做仍不写 attempts / 快照，但错题本与复习队列状态
+             按全应用统一口径联动（与错题本重做、复习作答共用 applyRedoLinkage） */
+          var linkedFav = ReviewLink.applyRedoLinkage(loadWrongbook(), loadReview(), q.id, right, new Date().toISOString(), ReviewLink.todayStr());
+          saveWrongbook(linkedFav.wrongbook);
+          saveReview(linkedFav.review);
           var da = q.distractor_analysis || {};
           verdict.innerHTML = '';
           var hb = document.createElement('b');
@@ -4785,8 +5020,15 @@
       var raw = null;
       try { raw = JSON.parse(window.localStorage.getItem(NOTES_KEY) || 'null'); } catch(e){}
       if(!Array.isArray(raw)){ return []; }
-      var types = ['kp', 'glossary', 'drill', 'custom'];
-      return raw.filter(function(n){ return n && typeof n === 'object' && typeof n.text === 'string' && n.id != null && String(n.id) !== ''; })
+      var types = ['kp', 'glossary', 'drill', 'custom', 'result', 'wrongbook', 'stagequiz', 'review', 'dimtest'];
+      var seenIds = {};
+      return raw.filter(function(n){
+          if(!(n && typeof n === 'object' && typeof n.text === 'string' && n.id != null && String(n.id) !== '')){ return false; }
+          var k = String(n.id);
+          if(seenIds[k]){ return false; } /* 批次 8（G-01）：重复 id 只保留第一条，删除不会连带 */
+          seenIds[k] = true;
+          return true;
+        })
         .map(function(n){
           var src = (n.source && typeof n.source === 'object') ? n.source : {};
           var created = typeof n.createdAt === 'number' ? n.createdAt : Date.now();
@@ -4801,7 +5043,7 @@
         });
     }
     function saveNotes(list){
-      try { window.localStorage.setItem(NOTES_KEY, JSON.stringify(list)); } catch(e){}
+      return storageWrite(NOTES_KEY, JSON.stringify(list));
     }
     function addNote(text, source){
       var t = String(text == null ? '' : text).trim();
@@ -4814,7 +5056,7 @@
       if(dup){ return { status: 'duplicate', truncated: truncated }; }
       var now = Date.now();
       notes.push({ id: 'note-' + now + '-' + Math.floor(Math.random() * 1e6), text: t, source: src, remark: '', createdAt: now, updatedAt: now });
-      saveNotes(notes);
+      if(!saveNotes(notes)){ return { status: 'failed', truncated: truncated }; }
       return { status: 'added', truncated: truncated };
     }
     var toastTimer = null;
@@ -4932,6 +5174,7 @@
           var title = titleEl ? titleEl.value.trim() : '';
           var res = addNote(text, { type: 'custom', label: title || '自定义笔记' });
           if(res.status === 'duplicate'){ showToast('这段已在笔记中'); return; }
+          if(res.status === 'failed'){ showToast('存储空间不足，笔记未能保存'); return; }
           if(res.status !== 'added'){ showToast('笔记正文不能为空'); return; }
           if(titleEl){ titleEl.value = ''; }
           if(textEl){ textEl.value = ''; }
@@ -4941,12 +5184,26 @@
         });
       }
     })();
-    /* ---------- 学习笔记：选区右键菜单 ---------- */
+    /* ---------- 学习笔记：选区右键菜单 + 浮动按钮（批次 8 二-3 / G-05 扩展） ----------
+       覆盖视图：知识点 / 词条 / 演练（批次 5）+ 结果页诊断、错题本、阶段小测复盘、
+       复习反馈、维度专项测评（批次 8）。答题进行中页面（view-quiz）不挂，避免干扰作答。
+       两条加入路径共用 commitPendingNote：①右键菜单（鼠标）；②浮动按钮（真实 <button>，
+       键盘选区后 Tab 可达、Enter 触发）——键盘用户不必依赖右键。 */
+    var NOTE_CTX_VIEWS = ['view-learn-detail', 'view-glossary-detail', 'view-drill-run',
+      'view-result', 'view-wrongbook', 'view-stagequiz', 'view-review', 'view-dimtest'];
     var noteCtxPending = null;
+    /* 批次 8（D-3 续）：浮动按钮用独立的 noteSelPending——此前与右键菜单共用一个 pending，
+       滚动关闭菜单时会把它一并清掉，与键盘 Tab 途中的 Enter 形成竞态（点得到、加不上）。 */
+    var noteSelPending = null;
     function hideNoteCtxMenu(){
       var menu = document.getElementById('note-ctx-menu');
       if(menu){ menu.style.display = 'none'; }
       noteCtxPending = null;
+    }
+    function hideNoteSelBtn(){
+      var btn = document.getElementById('note-sel-btn');
+      if(btn){ btn.style.display = 'none'; }
+      noteSelPending = null;
     }
     function noteSourceForView(viewId){
       if(viewId === 'view-learn-detail'){
@@ -4960,13 +5217,38 @@
         var e = (drillSession && drillSession.items) ? drillSession.items[drillSession.idx] : null;
         return { type: 'drill', label: e ? (e.gid + ' · ' + String(e.question || e.title || '').slice(0, 20)) : '面试演练' };
       }
+      if(viewId === 'view-result'){ return { type: 'result', label: '测评结果 · 弱点诊断' }; }
+      if(viewId === 'view-wrongbook'){ return { type: 'wrongbook', label: '错题本' }; }
+      if(viewId === 'view-stagequiz'){ return { type: 'stagequiz', label: '阶段小测复盘' }; }
+      if(viewId === 'view-review'){ return { type: 'review', label: '复习反馈' }; }
+      if(viewId === 'view-dimtest'){ return { type: 'dimtest', label: '维度专项测评' }; }
       return { type: 'custom', label: '自定义笔记' };
+    }
+    function noteViewOfRange(range){
+      for(var i = 0; i < NOTE_CTX_VIEWS.length; i++){
+        var view = document.getElementById(NOTE_CTX_VIEWS[i]);
+        if(view && view.classList.contains('active') && view.contains(range.startContainer) && view.contains(range.endContainer)){
+          return NOTE_CTX_VIEWS[i];
+        }
+      }
+      return null;
+    }
+    function commitNote(pending){
+      if(!pending){ hideNoteCtxMenu(); hideNoteSelBtn(); return; }
+      var res = addNote(pending.text, pending.source);
+      hideNoteCtxMenu(); hideNoteSelBtn();
+      if(res.status === 'duplicate'){ showToast('这段已在笔记中'); }
+      else if(res.status === 'added' && res.truncated){ showToast('已加入学习笔记（原文较长，已截断为 2000 字）'); }
+      else if(res.status === 'added'){ showToast('已加入学习笔记'); }
+      else if(res.status === 'failed'){ showToast('存储空间不足，笔记未能保存'); }
+      else { showToast('选区为空，没有加入笔记'); }
     }
     (function bindNoteCtxMenu(){
       var menu = document.getElementById('note-ctx-menu');
       var addBtn = document.getElementById('note-ctx-add');
+      var selBtn = document.getElementById('note-sel-btn');
       if(!menu || !addBtn){ return; }
-      ['view-learn-detail', 'view-glossary-detail', 'view-drill-run'].forEach(function(viewId){
+      NOTE_CTX_VIEWS.forEach(function(viewId){
         var view = document.getElementById(viewId);
         if(!view){ return; }
         view.addEventListener('contextmenu', function(e){
@@ -4983,24 +5265,51 @@
           menu.style.left = x + 'px';
           menu.style.top = y + 'px';
           menu.style.display = 'block';
+          hideNoteSelBtn();
         });
       });
-      addBtn.addEventListener('click', function(){
-        if(!noteCtxPending){ hideNoteCtxMenu(); return; }
-        var res = addNote(noteCtxPending.text, noteCtxPending.source);
-        hideNoteCtxMenu();
-        if(res.status === 'duplicate'){ showToast('这段已在笔记中'); }
-        else if(res.status === 'added' && res.truncated){ showToast('已加入学习笔记（原文较长，已截断为 2000 字）'); }
-        else if(res.status === 'added'){ showToast('已加入学习笔记'); }
-        else { showToast('选区为空，没有加入笔记'); }
+      addBtn.addEventListener('click', function(){ commitNote(noteCtxPending); });
+      /* 浮动选区按钮：选区稳定后出现在选区末端附近；选区消失/滚动/切页即隐藏 */
+      var selBtnTimer = 0;
+      function refreshSelBtn(){
+        if(!selBtn){ return; }
+        var sel = window.getSelection();
+        if(!sel || sel.isCollapsed || !sel.toString().trim()){ hideNoteSelBtn(); return; }
+        var range = null;
+        try { range = sel.getRangeAt(0); } catch(err){ hideNoteSelBtn(); return; }
+        var viewId = range ? noteViewOfRange(range) : null;
+        if(!viewId){ hideNoteSelBtn(); return; }
+        noteSelPending = { text: sel.toString(), source: noteSourceForView(viewId) };
+        var rects = range.getClientRects();
+        var r = rects.length ? rects[rects.length - 1] : range.getBoundingClientRect();
+        var x = Math.min(Math.max(0, r.left), Math.max(0, window.innerWidth - 168));
+        var y = r.bottom + 8;
+        if(y + 44 > window.innerHeight){ y = Math.max(0, r.top - 44); }
+        selBtn.style.left = x + 'px';
+        selBtn.style.top = y + 'px';
+        selBtn.style.display = 'block';
+      }
+      function scheduleSelBtn(){
+        window.clearTimeout(selBtnTimer);
+        selBtnTimer = window.setTimeout(refreshSelBtn, 120);
+      }
+      document.addEventListener('selectionchange', scheduleSelBtn);
+      document.addEventListener('mouseup', scheduleSelBtn);
+      document.addEventListener('keyup', function(e){
+        if(e.shiftKey || e.key === 'Shift'){ scheduleSelBtn(); }
       });
+      if(selBtn){ selBtn.addEventListener('click', function(){ commitNote(noteSelPending); }); }
       document.addEventListener('mousedown', function(e){
         if(menu.style.display !== 'none' && !menu.contains(e.target)){ hideNoteCtxMenu(); }
+        if(selBtn && selBtn.style.display !== 'none' && !selBtn.contains(e.target)){ hideNoteSelBtn(); }
         if(noteArmed && !noteArmed.wrap.contains(e.target)){ disarmNoteDelete(); }
       });
-      document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ hideNoteCtxMenu(); } });
-      window.addEventListener('scroll', hideNoteCtxMenu, true);
-      window.addEventListener('resize', hideNoteCtxMenu);
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ hideNoteCtxMenu(); hideNoteSelBtn(); } });
+      /* 批次 8（G-05 衍生修复 D-3）：滚动时右键菜单照常关闭，但浮动按钮不能隐藏——
+         键盘用户 Tab 导航必然触发页面滚动跟随焦点，若滚动即隐藏，按钮永远够不到。
+         改为按当前选区重定位（选区已消失时 refreshSelBtn 自然隐藏）。 */
+      window.addEventListener('scroll', function(){ hideNoteCtxMenu(); if(selBtn && selBtn.style.display !== 'none'){ scheduleSelBtn(); } }, true);
+      window.addEventListener('resize', function(){ hideNoteCtxMenu(); hideNoteSelBtn(); });
     })();
 
     renderPath();

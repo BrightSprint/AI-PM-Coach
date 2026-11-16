@@ -1,4 +1,42 @@
 'use strict';
+/* ===== 批次 8（三-2）可移植路径解析：脚本默认测「所在副本」 =====
+ * 应用目录解析顺序：环境变量 AIPM_APP_DIR → ../app（导出包布局）→
+ * ../ts-spaces/ai-pm-coach（开发布局）→ 脚本同级目录。playwright-core 优先走
+ * node_modules（导出包在根目录 npm install），回退沙盒内置路径；
+ * Chromium 路径可用 CHROMIUM_PATH 指定，hatch 专用参数仅在对应文件存在时附加。 */
+const __path = require('path');
+const __fs = require('fs');
+function __resolveAppDir(){
+  const cands = [];
+  if(process.env.AIPM_APP_DIR){ cands.push(process.env.AIPM_APP_DIR); }
+  cands.push(__path.join(__dirname, '..', 'app'));
+  cands.push(__path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach'));
+  cands.push(__dirname);
+  for(const c of cands){
+    try { if(__fs.existsSync(__path.join(c, 'index.html')) && __fs.existsSync(__path.join(c, 'assets'))){ return __path.resolve(c); } } catch(e){}
+  }
+  return __path.resolve(cands[0]);
+}
+const AIPM_APP_DIR = __resolveAppDir();
+const AIPM_APP_URL = 'file://' + AIPM_APP_DIR + '/index.html';
+const AIPM_ASSETS = __path.join(AIPM_APP_DIR, 'assets');
+function __playwright(){
+  try { return require('playwright-core'); } catch(e){}
+  try { return require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core'); } catch(e){}
+  throw new Error('找不到 playwright-core：请在应用根目录执行 npm install（见 README 的测试运行说明）');
+}
+function __chromePath(){
+  if(process.env.CHROMIUM_PATH){ return process.env.CHROMIUM_PATH; }
+  if(__fs.existsSync('/opt/meta-chromium/chrome')){ return '/opt/meta-chromium/chrome'; }
+  return undefined;
+}
+function __chromeArgs(){
+  const args = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const f = '/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+  if(__fs.existsSync(f)){ args.push('--hatch-webgl-allowed-domains-file=' + f, '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'); }
+  return args;
+}
+
 /* 知识搜索自测脚本（GLO 组）
  * 运行：node 自测脚本-知识搜索-GLO.js
  * 前半：Node 加载 assets/glossary.js + assets/glossary-link.js 做数据与引擎断言；
@@ -6,7 +44,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const ROOT = path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach');
+const ROOT = AIPM_APP_DIR;
 global.window = globalThis;
 vm.runInThisContext(fs.readFileSync(path.join(ROOT, 'assets', 'glossary.js'), 'utf8'));
 vm.runInThisContext(fs.readFileSync(path.join(ROOT, 'assets', 'glossary-link.js'), 'utf8'));
@@ -22,14 +60,14 @@ function check(id, name, cond, extra) {
   if (cond) pass++; else fail++;
 }
 
-/* GLO-01 数据完整性（总数含补遗 = 160）【补遗二期口径：147 → 160】 */
+/* GLO-01 数据完整性（总数含补遗 = 164）【批次 8 口径：160 → 164，新增 supplement4 补遗三期 4 条】 */
 {
   const ids = new Set(BANK.map(e => e.id));
   const cats = {};
   BANK.forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + 1; });
-  check('GLO-01', '词条总数 = 160（124 + 补遗 23 + 补遗二期 13）', BANK.length === 160, '实际 ' + BANK.length);
-  check('GLO-01', 'id 全唯一且 KB-001..KB-160 连续', ids.size === 160 && BANK.every((e, i) => e.id === 'KB-' + String(i + 1).padStart(3, '0')));
-  check('GLO-01', '分类计数 技术术语67/应用工具33/产品名词40/补强20', cats['技术术语'] === 67 && cats['应用工具'] === 33 && cats['产品名词'] === 40 && cats['补强'] === 20, JSON.stringify(cats));
+  check('GLO-01', '词条总数 = 164（124 + 补遗 23 + 补遗二期 13 + 补遗三期 4）', BANK.length === 164, '实际 ' + BANK.length);
+  check('GLO-01', 'id 全唯一且 KB-001..KB-164 连续', ids.size === 164 && BANK.every((e, i) => e.id === 'KB-' + String(i + 1).padStart(3, '0')));
+  check('GLO-01', '分类计数 技术术语71/应用工具33/产品名词40/补强20', cats['技术术语'] === 71 && cats['应用工具'] === 33 && cats['产品名词'] === 40 && cats['补强'] === 20, JSON.stringify(cats));
   check('GLO-01', '每条三段非空、kw 1–8 个、kp 为空或 0–26、supp 只含合法段名',
     BANK.every(e => e.concept.length >= 10 && e.usage.length >= 10 && e.notes.length >= 10 &&
       e.kw.length >= 1 && e.kw.length <= 8 &&
@@ -39,6 +77,8 @@ function check(id, name, cond, extra) {
   check('GLO-01', '补遗 23 条均带 batch=supplement2 且 supp 为空', s2.length === 23 && s2.every(e => (e.supp || []).length === 0), 's2=' + s2.length);
   const s3 = BANK.filter(e => e.batch === 'supplement3');
   check('GLO-01', '补遗二期 13 条均带 batch=supplement3 且 supp 为空', s3.length === 13 && s3.every(e => (e.supp || []).length === 0), 's3=' + s3.length);
+  const s4 = BANK.filter(e => e.batch === 'supplement4');
+  check('GLO-01', '补遗三期 4 条均带 batch=supplement4 且 supp 为空', s4.length === 4 && s4.every(e => (e.supp || []).length === 0), 's4=' + s4.length);
 }
 
 /* GLO-02 标题精确优先 */
@@ -69,7 +109,7 @@ function check(id, name, cond, extra) {
   const supp = GL.searchGlossary(BANK, '', '补强');
   const tech = GL.searchGlossary(BANK, '', '技术术语');
   const all = GL.searchGlossary(BANK, '', '全部');
-  check('GLO-04', '空查询+分类：补强 20 / 技术术语 67 / 全部 160', supp.length === 20 && supp.every(e => e.cat === '补强') && tech.length === 67 && all.length === 160,
+  check('GLO-04', '空查询+分类：补强 20 / 技术术语 71 / 全部 164', supp.length === 20 && supp.every(e => e.cat === '补强') && tech.length === 71 && all.length === 164,
     `supp=${supp.length} tech=${tech.length} all=${all.length}`);
   const inCat = GL.searchGlossary(BANK, '模型', '应用工具');
   check('GLO-04', '分类内搜索只出该分类', inCat.every(e => e.cat === '应用工具'), 'n=' + inCat.length);
@@ -136,21 +176,45 @@ function check(id, name, cond, extra) {
   check('GLO-10', '补遗二期 13 条：分类/批次/三段形状正确 13/13', shapeOk === 13, 'shapeOk=' + shapeOk);
 }
 
+/* GLO-11 批次 8 内容修复验证（一-1 MCP / 一-2 AB 测试 / 一-3 评测指标层 / 一-5 四要素统一） */
+{
+  const probe = (q, id) => GL.searchGlossary(BANK, q, '全部').some(x => x.id === id);
+  check('GLO-11', '评测指标层可搜：精确率/F1→KB-161、AUC→KB-162', probe('精确率', 'KB-161') && probe('F1', 'KB-161') && probe('AUC', 'KB-162'));
+  check('GLO-11', '经典架构/部署可搜：CNN→KB-163、Docker→KB-164、余弦相似度→KB-016',
+    probe('CNN', 'KB-163') && probe('Docker', 'KB-164') && probe('余弦相似度', 'KB-016'));
+  const ab = BANK.find(e => e.id === 'KB-023'), abMain = BANK.find(e => e.id === 'KB-097');
+  check('GLO-11', 'AB 测试双条可区分：KB-023 为索引条且指向 KB-097、kp 与主条一致',
+    ab.term.includes('索引条') && ab.concept.includes('KB-097') && ab.kp === abMain.kp, ab.term + ' kp=' + ab.kp + '/' + abMain.kp);
+  const m1 = BANK.find(e => e.id === 'KB-034'), m2 = BANK.find(e => e.id === 'KB-035');
+  check('GLO-11', 'MCP 双条标题可区分且互指：协议标准 ↔ Server',
+    m1.term.includes('协议标准') && m2.term.includes('Server') && m1.concept.includes('KB-035') && m2.concept.includes('KB-034'),
+    m1.term + ' | ' + m2.term);
+  const e25 = BANK.find(e => e.id === 'KB-025'), e114 = BANK.find(e => e.id === 'KB-114');
+  check('GLO-11', '提示词四要素三处统一为「角色/任务/约束/示例」（KB-025、KB-114 与知识点 1）',
+    e25.concept.includes('角色、任务、约束、示例') && e114.concept.includes('角色、任务、约束、示例'),
+    'KB-025/KB-114 已对齐；知识点 1 为基准口径（index.html POINTS[1]，由批次 8 报告核对）');
+  const rag = BANK.find(e => e.id === 'KB-030');
+  check('GLO-11', 'KB-030 指向 KB-109 完整链路（一-8）', rag.concept.includes('KB-109'));
+  const lora = BANK.find(e => e.id === 'KB-006');
+  check('GLO-11', 'KB-006 LoRA 口径与 KB-138 一致（一-9）', lora.concept.includes('能力上限通常略低于全参微调'));
+}
+
 /* ============ 浏览器 UI 流程（GLO-08 / GLO-09） ============ */
-const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
-const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
-const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
-const CARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt', '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'];
+const { chromium } = __playwright();
+const BASE = AIPM_APP_URL;
+const ORIGIN = 'file://' + AIPM_APP_DIR;
+const CARGS = __chromeArgs();
 const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/meta-chromium/chrome', args: CARGS });
+  const browser = await chromium.launch({ executablePath: __chromePath(), args: CARGS });
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   const pageErrors = [];
   const external = [];
   page.on('pageerror', e => pageErrors.push(e.message));
-  page.on('request', r => { const u = r.url(); if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) external.push(u); });
+  /* 批次 8 净室修正（D-8）：请求 URL 中的空格被编码为 %20，与含空格的本地路径 ORIGIN 比对前先解码，否则应用自身文件会被误判为外网请求 */
+  page.on('request', r => { let u = r.url(); try { u = decodeURIComponent(u); } catch (e) {} if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) external.push(u); });
   const activeView = () => page.evaluate(() => { const v = document.querySelector('.view.active'); return v ? v.id : null; });
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForTimeout(350);
@@ -163,7 +227,7 @@ const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v
   const inGlo = (await activeView()) === 'view-glossary';
   const totalShown = await page.evaluate(() => document.querySelectorAll('#glo-results .glo-item').length);
   const countTxt = await page.evaluate(() => document.getElementById('glo-count').textContent);
-  check('GLO-08', '学习页入口可达知识搜索，默认列出全部 160 条', inGlo && totalShown === 160 && countTxt.includes('160'), 'shown=' + totalShown + ' ' + countTxt.slice(0, 40));
+  check('GLO-08', '学习页入口可达知识搜索，默认列出全部 164 条', inGlo && totalShown === 164 && countTxt.includes('164'), 'shown=' + totalShown + ' ' + countTxt.slice(0, 40));
   /* 检索精确词条并打开详情 */
   await page.fill('#glo-input', '向量数据库');
   await page.waitForTimeout(250);

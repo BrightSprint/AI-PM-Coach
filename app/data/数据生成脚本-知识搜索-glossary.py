@@ -8,11 +8,14 @@
     本脚本按下方 SPLITS 逐句归属表切成三段——逐句索引、每句恰用一次，文本逐字来自原文、零转写）
   - ~/workspace/pm-knowledge-bank/supplement3/补遗条目.md（补遗二期 13 条，同上，
     按 SPLITS3 逐句归属表切分；框架工具层 6 条为应用工具、基础根条目 7 条为技术术语）
+  - ~/workspace/pm-knowledge-bank/supplement4/补遗条目.md（补遗三期 4 条，同上，
+    按 SPLITS4 逐句归属表切分；4 条均为技术术语）
 输出：
-  - ~/workspace/ts-spaces/ai-pm-coach/assets/glossary.js（var GLOSSARY_BANK = [...]，共 160 条）
+  - ~/workspace/ts-spaces/ai-pm-coach/assets/glossary.js（var GLOSSARY_BANK = [...]，共 164 条）
 口径：三段只能由原文拆分重组；原文缺段时的通用补写已在 frag 数据中以 supp 字段标注；
 补遗 23 条三段均有原文材料，supp 一律为空，另加 batch:"supplement2" 标记；
-补遗二期 13 条同口径，supp 一律为空，另加 batch:"supplement3" 标记。
+补遗二期 13 条同口径，supp 一律为空，另加 batch:"supplement3" 标记；
+补遗三期 4 条同口径，supp 一律为空，另加 batch:"supplement4" 标记。
 """
 import json
 import re
@@ -23,9 +26,30 @@ HERE = Path(__file__).resolve().parent
 WS = HERE.parent
 FRAG1 = HERE / 'glossary-frag-1.json'
 FRAG2 = HERE / 'glossary-frag-2.json'
-SUPP2_MD = WS / 'pm-knowledge-bank' / 'supplement2' / '补遗条目.md'
-SUPP3_MD = WS / 'pm-knowledge-bank' / 'supplement3' / '补遗条目.md'
-OUT = WS / 'ts-spaces' / 'ai-pm-coach' / 'assets' / 'glossary.js'
+
+# 批次 8（三-3）布局感知：补遗 MD 与产出路径在开发布局与导出包布局下都能解析——
+# 开发布局：~/workspace/pm-knowledge-bank/supplementN/补遗条目.md，产出到 ts-spaces 真源；
+# 导出包布局：<包根>/data/supplementN/补遗条目.md（与本脚本同级），产出到 <包根>/app/assets/。
+def _first_existing(cands):
+    for c in cands:
+        if c.exists():
+            return c
+    return cands[0]
+
+def _supp_md(n):
+    return _first_existing([
+        WS / 'pm-knowledge-bank' / f'supplement{n}' / '补遗条目.md',
+        HERE / f'supplement{n}' / '补遗条目.md',
+        HERE / '..' / 'data' / f'supplement{n}' / '补遗条目.md',
+    ])
+
+SUPP2_MD = _supp_md(2)
+SUPP3_MD = _supp_md(3)
+SUPP4_MD = _supp_md(4)
+OUT = _first_existing([
+    WS / 'ts-spaces' / 'ai-pm-coach' / 'assets' / 'glossary.js',
+    HERE / '..' / 'app' / 'assets' / 'glossary.js',
+])
 
 # 补遗逐句归属表：c=概念介绍 u=使用方案 n=注意事项（0 基句序号，每句恰出现一次）
 SPLITS = {
@@ -101,6 +125,17 @@ META3 = [
 ]
 CATS3_BY_CHAPTER = [(1, 6, '应用工具'), (7, 13, '技术术语')]
 
+# 补遗三期逐句归属表：4 条均为「概念 3 句 / 使用 1 句 / 注意 1 句」的五句结构
+SPLITS4 = {n: dict(c=[0, 1, 2], u=[3], n=[4]) for n in range(1, 5)}
+# 补遗三期关键词与相关知识点（kp 口径同上：有真关联才链）
+META4 = [
+    (['精确率', '召回率', 'F1', '准确率', '混淆矩阵', '查准率', '查全率'], 9),
+    (['AUC', 'ROC', '排序能力', '阈值无关'], 9),
+    (['CNN', 'RNN', 'LSTM', 'GAN', 'BERT', '经典架构'], 0),
+    (['Docker', 'Kubernetes', 'ONNX', '容器化', '部署格式'], 25),
+]
+CATS4_BY_CHAPTER = [(1, 4, '技术术语')]
+
 
 def fail(msg):
     print('FAIL:', msg)
@@ -163,12 +198,14 @@ def main():
     supp2 = parse_supp_md(SUPP2_MD, 23, SPLITS, META, CATS_BY_CHAPTER, 124, 'supplement2')
     # ---- 补遗二期解析 ----
     supp3 = parse_supp_md(SUPP3_MD, 13, SPLITS3, META3, CATS3_BY_CHAPTER, 147, 'supplement3')
+    # ---- 补遗三期解析 ----
+    supp4 = parse_supp_md(SUPP4_MD, 4, SPLITS4, META4, CATS4_BY_CHAPTER, 160, 'supplement4')
 
-    all_entries = entries + supp2 + supp3
+    all_entries = entries + supp2 + supp3 + supp4
 
     # ---- 全量校验 ----
     ids = [e['id'] for e in all_entries]
-    if len(all_entries) != 160 or len(set(ids)) != 160:
+    if len(all_entries) != 164 or len(set(ids)) != 164:
         fail(f'总数/id 唯一性异常：{len(all_entries)} / {len(set(ids))}')
     for pos, e in enumerate(all_entries, 1):
         if e['id'] != f'KB-{pos:03d}':
@@ -187,11 +224,12 @@ def main():
 
     payload = json.dumps(all_entries, ensure_ascii=False)
     OUT.write_text(
-        '/* glossary.js — 知识搜索词条数据（共 160 条）\n'
+        '/* glossary.js — 知识搜索词条数据（共 164 条）\n'
         ' * 由 ai-pm-coach-app/数据生成脚本-知识搜索-glossary.py 生成，勿手改。\n'
         ' * 来源：知识库 104 条 + 补强篇 20 条（原文三段式拆分，缺段补写以 supp 字段标注）\n'
         ' *       + supplement2 补遗 23 条（batch:"supplement2"，逐句切分、文本逐字来自原文）\n'
-        ' *       + supplement3 补遗二期 13 条（batch:"supplement3"，框架工具层 6 + 基础根条目 7，同口径）。 */\n'
+        ' *       + supplement3 补遗二期 13 条（batch:"supplement3"，框架工具层 6 + 基础根条目 7，同口径）\n'
+        ' *       + supplement4 补遗三期 4 条（batch:"supplement4"，评测指标 2 + 经典架构 1 + 部署基础 1，同口径）。 */\n'
         'var GLOSSARY_BANK=' + payload + ';\n',
         encoding='utf-8')
 
@@ -200,6 +238,7 @@ def main():
     print('总数', len(all_entries), '分类', dict(Counter(e['cat'] for e in all_entries)))
     print('补遗', len(supp2), '（batch=supplement2, KB-125..KB-147）')
     print('补遗二期', len(supp3), '（batch=supplement3, KB-148..KB-160）')
+    print('补遗三期', len(supp4), '（batch=supplement4, KB-161..KB-164）')
     print('supp 非空', sum(1 for e in all_entries if e['supp']), '条；kp 非空', sum(1 for e in all_entries if e['kp'] is not None), '条')
     print('重名词条（保留为独立条目）:', dup if dup else '无')
 

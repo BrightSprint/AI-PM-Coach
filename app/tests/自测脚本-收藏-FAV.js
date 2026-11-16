@@ -1,13 +1,51 @@
 'use strict';
+/* ===== 批次 8（三-2）可移植路径解析：脚本默认测「所在副本」 =====
+ * 应用目录解析顺序：环境变量 AIPM_APP_DIR → ../app（导出包布局）→
+ * ../ts-spaces/ai-pm-coach（开发布局）→ 脚本同级目录。playwright-core 优先走
+ * node_modules（导出包在根目录 npm install），回退沙盒内置路径；
+ * Chromium 路径可用 CHROMIUM_PATH 指定，hatch 专用参数仅在对应文件存在时附加。 */
+const __path = require('path');
+const __fs = require('fs');
+function __resolveAppDir(){
+  const cands = [];
+  if(process.env.AIPM_APP_DIR){ cands.push(process.env.AIPM_APP_DIR); }
+  cands.push(__path.join(__dirname, '..', 'app'));
+  cands.push(__path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach'));
+  cands.push(__dirname);
+  for(const c of cands){
+    try { if(__fs.existsSync(__path.join(c, 'index.html')) && __fs.existsSync(__path.join(c, 'assets'))){ return __path.resolve(c); } } catch(e){}
+  }
+  return __path.resolve(cands[0]);
+}
+const AIPM_APP_DIR = __resolveAppDir();
+const AIPM_APP_URL = 'file://' + AIPM_APP_DIR + '/index.html';
+const AIPM_ASSETS = __path.join(AIPM_APP_DIR, 'assets');
+function __playwright(){
+  try { return require('playwright-core'); } catch(e){}
+  try { return require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core'); } catch(e){}
+  throw new Error('找不到 playwright-core：请在应用根目录执行 npm install（见 README 的测试运行说明）');
+}
+function __chromePath(){
+  if(process.env.CHROMIUM_PATH){ return process.env.CHROMIUM_PATH; }
+  if(__fs.existsSync('/opt/meta-chromium/chrome')){ return '/opt/meta-chromium/chrome'; }
+  return undefined;
+}
+function __chromeArgs(){
+  const args = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const f = '/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+  if(__fs.existsSync(f)){ args.push('--hatch-webgl-allowed-domains-file=' + f, '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'); }
+  return args;
+}
+
 /* AI PM Coach 批次 5 自测脚本：收藏 FAV-01..10 + 数据管理 DAT-12/DAT-13
  * 运行：node 自测脚本-收藏-FAV.js
  * 无头 Chromium（playwright-core），对象为 ts-spaces 真源 index.html（file://）。
  * 结果逐条 PASS/FAIL 打印，汇总 JSON 落 /tmp/fav-results.json。 */
 const fs = require('fs');
-const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
-const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
-const CHROME = '/opt/meta-chromium/chrome';
-const CARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt', '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'];
+const { chromium } = __playwright();
+const BASE = AIPM_APP_URL;
+const CHROME = __chromePath();
+const CARGS = __chromeArgs();
 const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'];
 const TEN_KEYS = TWELVE_KEYS.slice(0, 10);
 
@@ -149,7 +187,7 @@ async function importFile(page, p) {
     await page.waitForTimeout(200);
     const q0 = bank2[0];
     await page.evaluate(i => { document.querySelectorAll('#fav-list .fav-item')[1].querySelectorAll('.fav-redo .p-opt')[i].click(); }, 'ABCD'.indexOf(q0.answer));
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(450); /* 批次 8：等待加长，防慢机偶发读空（曾出现一次时序性 FAIL） */
     const verdictRight = await page.evaluate(() => { const items2 = document.querySelectorAll('#fav-list .fav-item'); const v = items2[1].querySelector('.fav-redo-verdict'); return v ? v.textContent : ''; });
     const attemptsAfter = await lsGet(page, 'aipm.attempts.v1');
     check('FAV-06', '重做即时判对错且 attempts 字节不变、无新测评记录',

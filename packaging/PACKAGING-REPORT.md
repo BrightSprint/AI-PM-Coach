@@ -1,5 +1,7 @@
 # AI PM Coach — Tauri 打包报告（2026-11-13）
 
+> **历史快照提示（批次 8 · 三-13，2026-11-16 补注）**：本文是 2026-11-13 首次打包实测的历史记录，其中「本机未产出 exe」等结论已被后续进展取代——自 2026-11-14 起，exe 改由 GitHub Actions 的 Windows 镜像构建并多次成功产出（最新 run 见批次 8 报告与 BUILD-WINDOWS.md）。本文正文保持原样仅供追溯，当前状态请以上述两处为准。
+
 ## 结论
 
 **本机（Linux VM）未产出 Windows 安装包 exe。** 交叉编译工具链其余环节全部打通，
@@ -36,7 +38,7 @@ cargo-xwin 的 SDK 下载步骤三次尝试合计约 55 分钟墙钟（含其内
 ```
 package.json / package-lock.json      # @tauri-apps/cli ^2
 README.md                             # Windows / Linux 两条构建路径
-dist/                                 # 前端副本（index.html + icon.webp + assets/*.js，共 5.0M）
+dist/                                 # 前端副本（index.html + icon.webp + assets/*.js，共 5.0M）【批次 8 · 三-19 补注：此为 2026-11-13 快照数字；现行 dist 实测约 5.5 MB（5,502,259 字节），以 packaging/README.md 为准】
 src-tauri/
   tauri.conf.json                     # 见下方配置证据
   Cargo.toml / Cargo.lock             # 依赖已解析，cargo fetch 全量下载完成

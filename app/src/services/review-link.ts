@@ -36,7 +36,8 @@ export function addDaysStr(dateStr: string, n: number): string {
 /* ---------- 题目 → 知识点映射（与 goal-link 同口径：最长关键词优先） ---------- */
 interface BankQuestion { id: number; dimension: string; difficulty: number; stem: string; sub_topic?: string; exam_points?: string[]; }
 function questionText(q: BankQuestion): string {
-  return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
+  /* 批次 8（一-4）统一口径：匹配文本含 difficulty_points，与练习口径同一组成。 */
+  return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + ((q as { difficulty_points?: string[] }).difficulty_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
 }
 export function matchPointDetailed(q: BankQuestion, dimIndex: number, pointKeywords: string[][]): { pointIndex: number; bestLen: number } {
   const candidates = POINTS_BY_DIM[dimIndex] || [];
@@ -135,6 +136,15 @@ export function applyRedo(wrongbook: any, qid: number, correct: boolean, isoTime
 }
 
 /* ================= 二、阶段小测 ================= */
+/** 批次 8（二-1）：跨场景统一状态联动——任一重做场景的最近一次结果同时作用于
+ * 错题本（mastered）与复习队列（在队时按复习口径进阶/回退）；不入队、不写 attempts。 */
+export function applyRedoLinkage(wrongbook: any, review: any, qid: number, correct: boolean, isoTime: string, today: string) {
+  const wb = applyRedo(wrongbook, qid, correct, isoTime);
+  let rv = normalizeReview(review);
+  if (rv[qid]) { rv = applyReviewResult(rv, qid, correct, today); }
+  return { wrongbook: wb, review: rv };
+}
+
 export function stagePool(bank: BankQuestion[], stageIdx: number, dimNames: string[], pointKeywords: string[][]): BankQuestion[] {
   const dimName = dimNames[stageIdx];
   return (bank || []).filter((q) => q.dimension === dimName && matchPointDetailed(q, stageIdx, pointKeywords).bestLen > 0);

@@ -1,0 +1,1 @@
+{"description":"AI PM Coach 网页版导出包：应用本体（app/）+ 数据与生成脚本（data/）+ 自测脚本（tests/）。应用本身无构建步骤；本文件仅声明自测脚本的运行依赖。","devDependencies":{"playwright-core":"1.55.1"},"name":"ai-pm-coach","private":true,"scripts":{"test":"node tests/run-all.js"},"version":"1.0.0"}

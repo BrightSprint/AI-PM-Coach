@@ -50,7 +50,8 @@ const SCOPES = ['unseen', 'wrongfirst', 'all'];
 function uniqNums(arr: number[] | undefined): number[] {
   const seen = new Set<number>();
   const out: number[] = [];
-  (arr ?? []).forEach((x) => { if (typeof x === 'number' && !seen.has(x)) { seen.add(x); out.push(x); } });
+  /* 批次 8（G-07 衍生加固）：非数组入参按空数组处理，不抛错 */
+  (Array.isArray(arr) ? arr : []).forEach((x) => { if (typeof x === 'number' && !seen.has(x)) { seen.add(x); out.push(x); } });
   return out;
 }
 
@@ -116,7 +117,7 @@ export function normalizeQuizCfg(raw: unknown, dimNames: string[]): QuizCfg {
   /* 批次 6 字段：类型不合法一律回落默认，不因坏字段丢弃其余设置 */
   cfg.weakestPending = r.weakestPending === true;
   cfg.weakestNotice =
-    r.weakestNotice && typeof r.weakestNotice === 'object' && typeof r.weakestNotice.dim === 'string'
+    r.weakestNotice && typeof r.weakestNotice === 'object' && typeof r.weakestNotice.dim === 'string' && dimNames.includes(r.weakestNotice.dim)
       ? { dim: r.weakestNotice.dim, score: typeof r.weakestNotice.score === 'number' ? r.weakestNotice.score : null }
       : null;
   return cfg;
@@ -142,7 +143,8 @@ export interface BankQuestionLike {
 }
 
 function questionText(q: BankQuestionLike): string {
-  return `${q.sub_topic ?? ''} ${(q.exam_points ?? []).join(' ')} ${q.stem ?? ''}`.toLowerCase();
+  /* 批次 8（一-4）统一口径：匹配文本含 difficulty_points（与 JS 版同组成）。 */
+  return `${q.sub_topic ?? ''} ${(q.exam_points ?? []).join(' ')} ${(q.difficulty_points ?? []).join(' ')} ${q.stem ?? ''}`.toLowerCase();
 }
 
 /** 题目 → 知识点：与 diagnosis.js 的 matchPointIndex 同口径（最长关键词优先） */

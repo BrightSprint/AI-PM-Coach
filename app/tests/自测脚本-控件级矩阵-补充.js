@@ -1,11 +1,49 @@
 'use strict';
+/* ===== 批次 8（三-2）可移植路径解析：脚本默认测「所在副本」 =====
+ * 应用目录解析顺序：环境变量 AIPM_APP_DIR → ../app（导出包布局）→
+ * ../ts-spaces/ai-pm-coach（开发布局）→ 脚本同级目录。playwright-core 优先走
+ * node_modules（导出包在根目录 npm install），回退沙盒内置路径；
+ * Chromium 路径可用 CHROMIUM_PATH 指定，hatch 专用参数仅在对应文件存在时附加。 */
+const __path = require('path');
+const __fs = require('fs');
+function __resolveAppDir(){
+  const cands = [];
+  if(process.env.AIPM_APP_DIR){ cands.push(process.env.AIPM_APP_DIR); }
+  cands.push(__path.join(__dirname, '..', 'app'));
+  cands.push(__path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach'));
+  cands.push(__dirname);
+  for(const c of cands){
+    try { if(__fs.existsSync(__path.join(c, 'index.html')) && __fs.existsSync(__path.join(c, 'assets'))){ return __path.resolve(c); } } catch(e){}
+  }
+  return __path.resolve(cands[0]);
+}
+const AIPM_APP_DIR = __resolveAppDir();
+const AIPM_APP_URL = 'file://' + AIPM_APP_DIR + '/index.html';
+const AIPM_ASSETS = __path.join(AIPM_APP_DIR, 'assets');
+function __playwright(){
+  try { return require('playwright-core'); } catch(e){}
+  try { return require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core'); } catch(e){}
+  throw new Error('找不到 playwright-core：请在应用根目录执行 npm install（见 README 的测试运行说明）');
+}
+function __chromePath(){
+  if(process.env.CHROMIUM_PATH){ return process.env.CHROMIUM_PATH; }
+  if(__fs.existsSync('/opt/meta-chromium/chrome')){ return '/opt/meta-chromium/chrome'; }
+  return undefined;
+}
+function __chromeArgs(){
+  const args = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const f = '/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+  if(__fs.existsSync(f)){ args.push('--hatch-webgl-allowed-domains-file=' + f, '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'); }
+  return args;
+}
+
 /* 控件级矩阵 · 补充实测：首轮未覆盖的次要控件/另一分支（收起类切换、重做答错分支、
  * 小测/复习结果页返回按钮、演练小结两按钮、子集 modal 与专项「回到首页」、末题跳过、
  * 选项改选、申诉收起、编辑器单框勾选、整理区待归类、演练模式筛选计数）。 */
 const fs = require('fs');
-const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
-const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
-const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
+const { chromium } = __playwright();
+const BASE = AIPM_APP_URL;
+const ORIGIN = 'file://' + AIPM_APP_DIR;
 const results = [];
 let pass = 0, fail = 0;
 function check(id, name, cond, detail) {
@@ -20,7 +58,8 @@ async function newPage(opts) {
   const ctx = await browser.newContext(opts || {});
   const page = await ctx.newPage();
   page.on('pageerror', e => pageErrors.push(e.message));
-  page.on('request', r => { const u = r.url(); if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) externalRequests.push(u); });
+  /* 批次 8 净室修正（D-8）：请求 URL 中的空格被编码为 %20，与含空格的本地路径 ORIGIN 比对前先解码，否则应用自身文件会被误判为外网请求 */
+  page.on('request', r => { let u = r.url(); try { u = decodeURIComponent(u); } catch (e) {} if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) externalRequests.push(u); });
   return { ctx, page };
 }
 async function goto(page) { await page.goto(BASE, { waitUntil: 'load' }); await page.waitForTimeout(350); }
@@ -50,7 +89,7 @@ async function answerCurrent(page, mode, optSel, nextSel, stemSel, dimSel) {
 const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '#q-stem', dim: '#q-dim' };
 
 (async () => {
-  browser = await chromium.launch({ executablePath: '/opt/meta-chromium/chrome', args: ['--no-sandbox', '--disable-dev-shm-usage', '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt', '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'] });
+  browser = await chromium.launch({ executablePath: __chromePath(), args: __chromeArgs() });
 
   /* ===== SUP-A：单维 12 题子集（全错）→ 资源收起 / redo 收起 / 申诉收起 / 子集 modal / 末题跳过 / 专项回到首页 ===== */
   {

@@ -1,13 +1,51 @@
 'use strict';
+/* ===== 批次 8（三-2）可移植路径解析：脚本默认测「所在副本」 =====
+ * 应用目录解析顺序：环境变量 AIPM_APP_DIR → ../app（导出包布局）→
+ * ../ts-spaces/ai-pm-coach（开发布局）→ 脚本同级目录。playwright-core 优先走
+ * node_modules（导出包在根目录 npm install），回退沙盒内置路径；
+ * Chromium 路径可用 CHROMIUM_PATH 指定，hatch 专用参数仅在对应文件存在时附加。 */
+const __path = require('path');
+const __fs = require('fs');
+function __resolveAppDir(){
+  const cands = [];
+  if(process.env.AIPM_APP_DIR){ cands.push(process.env.AIPM_APP_DIR); }
+  cands.push(__path.join(__dirname, '..', 'app'));
+  cands.push(__path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach'));
+  cands.push(__dirname);
+  for(const c of cands){
+    try { if(__fs.existsSync(__path.join(c, 'index.html')) && __fs.existsSync(__path.join(c, 'assets'))){ return __path.resolve(c); } } catch(e){}
+  }
+  return __path.resolve(cands[0]);
+}
+const AIPM_APP_DIR = __resolveAppDir();
+const AIPM_APP_URL = 'file://' + AIPM_APP_DIR + '/index.html';
+const AIPM_ASSETS = __path.join(AIPM_APP_DIR, 'assets');
+function __playwright(){
+  try { return require('playwright-core'); } catch(e){}
+  try { return require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core'); } catch(e){}
+  throw new Error('找不到 playwright-core：请在应用根目录执行 npm install（见 README 的测试运行说明）');
+}
+function __chromePath(){
+  if(process.env.CHROMIUM_PATH){ return process.env.CHROMIUM_PATH; }
+  if(__fs.existsSync('/opt/meta-chromium/chrome')){ return '/opt/meta-chromium/chrome'; }
+  return undefined;
+}
+function __chromeArgs(){
+  const args = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const f = '/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+  if(__fs.existsSync(f)){ args.push('--hatch-webgl-allowed-domains-file=' + f, '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'); }
+  return args;
+}
+
 /* 全量回归 · 浏览器流程脚本（无头 Chromium / Playwright-core）
  * 对真实页面 http://127.0.0.1:8931/index.html 驱动 UI 流程，覆盖：
  * 早期组界面条目 + CNT-06/07 界面面 + DAT-01/03/04/05/06/07 + PLN-05/06 + SET-08
  * + MAT-05 + WRB-07 + STG-06 + REV-06 + DRL-08 + 题库未就绪拦截 + 零外网请求监控。 */
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
-const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
-const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
+const { chromium } = __playwright();
+const BASE = AIPM_APP_URL;
+const ORIGIN = 'file://' + AIPM_APP_DIR;
 const DIMS = ['AI 基础认知', '场景洞察', '产品设计', '数据与评估', '技术协作', '商业与落地'];
 const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 
@@ -24,7 +62,8 @@ async function newPage(ctxOpts) {
   const ctx = await browser.newContext(ctxOpts || {});
   const page = await ctx.newPage();
   page.on('pageerror', e => pageErrors.push(e.message));
-  page.on('request', r => { const u = r.url(); if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) externalRequests.push(u); });
+  /* 批次 8 净室修正（D-8）：请求 URL 中的空格被编码为 %20，与含空格的本地路径 ORIGIN 比对前先解码，否则应用自身文件会被误判为外网请求 */
+  page.on('request', r => { let u = r.url(); try { u = decodeURIComponent(u); } catch (e) {} if (!u.startsWith(ORIGIN) && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) externalRequests.push(u); });
   return { ctx, page };
 }
 async function goto(page) { await page.goto(BASE, { waitUntil: 'load' }); await page.waitForTimeout(350); }
@@ -73,9 +112,7 @@ function snapSeed(over) {
 }
 
 (async () => {
-  browser = await chromium.launch({ executablePath: '/opt/meta-chromium/chrome', args: ['--no-sandbox', '--disable-dev-shm-usage',
-    '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt',
-    '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'] });
+  browser = await chromium.launch({ executablePath: __chromePath(), args: __chromeArgs() });
 
   /* ================= S1：冷启动 / 空状态 / 文案 ================= */
   {
@@ -449,7 +486,9 @@ function snapSeed(over) {
       && attemptsBytesAfter === attemptsBytesBefore && statsReload.mastered === 1 && statsReload.pending === 17,
       'filter=' + JSON.stringify(filteredDims).slice(0, 80) + ' redo=' + JSON.stringify(redoFlow) + ' after=' + JSON.stringify(statsAfter) + ' reload=' + JSON.stringify(statsReload));
     // 条目内知识点链接跳学习页
-    const pointJump = await page.evaluate(() => { const b = document.querySelector('#wb-list .wb-item .wb-point-btn'); if (b) { b.click(); return true; } return false; });
+    // 批次 8（二-2 口径）：未精确匹配题的按钮改为明示未匹配并跳本维路径（由 WRB-09 覆盖）；
+    // 本条只验已精确匹配题的「去学知识点「X」」按钮仍直达对应知识点学习页（批次 8 二-2 后文案为「」式，未精确匹配题的回落按钮由 WRB-08 覆盖）。
+    const pointJump = await page.evaluate(() => { const b = [...document.querySelectorAll('#wb-list .wb-item .wb-point-btn')].find(x => x.textContent.includes('去学知识点「')); if (b) { b.click(); return true; } return false; });
     await page.waitForTimeout(300);
     check('WRB-07c', '错题条目知识点链接跳到对应知识点学习页', pointJump && (await activeView(page)) === 'view-learn-detail', 'jump=' + pointJump);
     await ctx.close();

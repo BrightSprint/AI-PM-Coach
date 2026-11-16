@@ -1,10 +1,48 @@
 'use strict';
+/* ===== 批次 8（三-2）可移植路径解析：脚本默认测「所在副本」 =====
+ * 应用目录解析顺序：环境变量 AIPM_APP_DIR → ../app（导出包布局）→
+ * ../ts-spaces/ai-pm-coach（开发布局）→ 脚本同级目录。playwright-core 优先走
+ * node_modules（导出包在根目录 npm install），回退沙盒内置路径；
+ * Chromium 路径可用 CHROMIUM_PATH 指定，hatch 专用参数仅在对应文件存在时附加。 */
+const __path = require('path');
+const __fs = require('fs');
+function __resolveAppDir(){
+  const cands = [];
+  if(process.env.AIPM_APP_DIR){ cands.push(process.env.AIPM_APP_DIR); }
+  cands.push(__path.join(__dirname, '..', 'app'));
+  cands.push(__path.join(__dirname, '..', 'ts-spaces', 'ai-pm-coach'));
+  cands.push(__dirname);
+  for(const c of cands){
+    try { if(__fs.existsSync(__path.join(c, 'index.html')) && __fs.existsSync(__path.join(c, 'assets'))){ return __path.resolve(c); } } catch(e){}
+  }
+  return __path.resolve(cands[0]);
+}
+const AIPM_APP_DIR = __resolveAppDir();
+const AIPM_APP_URL = 'file://' + AIPM_APP_DIR + '/index.html';
+const AIPM_ASSETS = __path.join(AIPM_APP_DIR, 'assets');
+function __playwright(){
+  try { return require('playwright-core'); } catch(e){}
+  try { return require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core'); } catch(e){}
+  throw new Error('找不到 playwright-core：请在应用根目录执行 npm install（见 README 的测试运行说明）');
+}
+function __chromePath(){
+  if(process.env.CHROMIUM_PATH){ return process.env.CHROMIUM_PATH; }
+  if(__fs.existsSync('/opt/meta-chromium/chrome')){ return '/opt/meta-chromium/chrome'; }
+  return undefined;
+}
+function __chromeArgs(){
+  const args = ['--no-sandbox', '--disable-dev-shm-usage'];
+  const f = '/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt';
+  if(__fs.existsSync(f)){ args.push('--hatch-webgl-allowed-domains-file=' + f, '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'); }
+  return args;
+}
+
 /* 全量回归补写脚本：批次 1（CAL / CNT / DAT 逻辑面）+ 早期组可逻辑化条目
  * 加载真实资产：quiz-bank / cat-engine / diagnosis-data / diagnosis / goal-link。
  * 界面流程部分（恢复卡、快照去重、导出下载等）由浏览器脚本执行，本脚本只覆盖引擎/数据层断言。 */
 const fs = require('fs');
 const vm = require('vm');
-const base = '/home/hatch/workspace/ts-spaces/ai-pm-coach/assets/';
+const base = AIPM_ASSETS + '/';
 const sandbox = { console: { log: () => {}, warn: () => {} } };
 sandbox.window = sandbox; sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
@@ -14,7 +52,7 @@ for (const f of ['quiz-bank.js', 'cat-engine.js', 'diagnosis-data.js', 'diagnosi
 const { QUIZ_BANK, CatEngine, GoalLink, Diagnosis, DIAG_DATA } = sandbox;
 const DIMS = ['AI 基础认知', '场景洞察', '产品设计', '数据与评估', '技术协作', '商业与落地'];
 const byId = {}; QUIZ_BANK.forEach(q => { byId[q.id] = q; });
-const html = fs.readFileSync('/home/hatch/workspace/ts-spaces/ai-pm-coach/index.html', 'utf8');
+const html = fs.readFileSync(__path.join(AIPM_APP_DIR, 'index.html'), 'utf8');
 let pass = 0, fail = 0;
 function check(id, name, cond, detail) {
   console.log((cond ? 'PASS ' : 'FAIL ') + id + ' · ' + name + (detail ? ' — ' + detail : ''));

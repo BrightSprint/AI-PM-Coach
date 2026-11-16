@@ -5,7 +5,7 @@ Rust 只做外壳：主窗口 + 单实例（重复启动聚焦已有窗口），
 
 ## 结构
 
-- `dist/` — 前端本体副本（源自网页版导出 `app/`：index.html + assets/，共 5.0M）
+- `dist/` — 前端本体副本（源自网页版导出 `app/`：index.html + assets/，约 5.5 MB；批次 8 后实测 5,502,259 字节）
 - `src-tauri/` — Tauri 工程（tauri.conf.json / Cargo.toml / src/main.rs / src/lib.rs / icons/ / capabilities/）
 - `package.json` — 固定 @tauri-apps/cli ^2（实际解析 2.12.4）
 

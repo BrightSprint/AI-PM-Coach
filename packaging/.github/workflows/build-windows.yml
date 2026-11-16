@@ -1,0 +1,41 @@
+name: build-windows
+
+# 在 GitHub 的 Windows 镜像上构建 AI PM Coach 安装包（NSIS，内嵌 WebView2 离线安装）。
+# 用法：把本工程文件夹作为仓库根目录 push 到 GitHub 后，
+# 在 Actions 页手动 Run workflow，或 push 到 main 自动触发；
+# 产物在运行记录的 Artifacts 中下载（AI-PM-Coach-Windows）。
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust (MSVC target)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Tauri app (NSIS bundle)
+        run: npx tauri build --target x86_64-pc-windows-msvc --bundles nsis
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-PM-Coach-Windows
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+          if-no-files-found: error

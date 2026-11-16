@@ -26,7 +26,8 @@
 
   function uniqNums(arr) {
     var seen = {}, out = [];
-    (arr || []).forEach(function (x) { if (typeof x === 'number' && !seen[x]) { seen[x] = true; out.push(x); } });
+    /* 批次 8（G-07 衍生加固）：非数组入参（导入/手改的坏数据）按空数组处理，不抛错 */
+    (Array.isArray(arr) ? arr : []).forEach(function (x) { if (typeof x === 'number' && !seen[x]) { seen[x] = true; out.push(x); } });
     return out;
   }
 
@@ -93,7 +94,7 @@
     /* 批次 6：「只学最弱维」待生效状态（旧数据无此二字段时默认 false / null，向后兼容） */
     cfg.weakestPending = raw.weakestPending === true;
     cfg.weakestNotice =
-      (raw.weakestNotice && typeof raw.weakestNotice === 'object' && typeof raw.weakestNotice.dim === 'string')
+      (raw.weakestNotice && typeof raw.weakestNotice === 'object' && typeof raw.weakestNotice.dim === 'string' && dimNames.indexOf(raw.weakestNotice.dim) >= 0)
         ? { dim: raw.weakestNotice.dim, score: (typeof raw.weakestNotice.score === 'number' ? raw.weakestNotice.score : null) }
         : null;
     return cfg;
@@ -108,7 +109,8 @@
 
   /* ---------- 题目 → 知识点匹配（与 diagnosis.js 同口径：最长关键词优先） ---------- */
   function questionText(q) {
-    return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
+    /* 批次 8（一-4）统一口径：匹配文本 = 子考点 + 考核点 + 难点 + 题干（与 review-link 同组成）。 */
+    return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + (q.difficulty_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
   }
   function matchQuestionPoint(q, dimIndex, pointKeywords) {
     var candidates = POINTS_BY_DIM[dimIndex] || [];

@@ -83,10 +83,12 @@
   }
 
   var POINTS_BY_DIM = [[0, 1, 2, 18, 19], [3, 4, 5, 20], [6, 7, 8, 21, 22], [9, 10, 11, 23, 24], [12, 13, 14, 25], [15, 16, 17, 26]];
-  function matchPointIndex(dimIdx, r) {
+  /* 批次 8（一-4）统一口径：匹配文本 = 子考点 + 考核点 + 难点 + 题干，与 goal-link / review-link 同组成；
+     批次 8（二-2）：同时返回 bestLen，bestLen=0 表示未精确命中任何关键词，界面不得把回落知识点当精确匹配呈现。 */
+  function matchPointDetailed(dimIdx, r) {
     var candidates = POINTS_BY_DIM[dimIdx] || [dimIdx * 3];
-    if (!r) return candidates[0];
-    var text = (subOf(r) + ' ' + (r.stem || '')).toLowerCase();
+    if (!r) return { index: candidates[0], bestLen: 0 };
+    var text = (subOf(r) + ' ' + examOf(r).join(' ') + ' ' + diffPtsOf(r).join(' ') + ' ' + (r.stem || '')).toLowerCase();
     var bestIdx = candidates[0], bestLen = 0;
     candidates.forEach(function (pi) {
       var kws = DATA.POINT_KEYWORDS[pi] || [];
@@ -95,8 +97,9 @@
         if (k.length > bestLen && text.indexOf(k) >= 0) { bestLen = k.length; bestIdx = pi; }
       });
     });
-    return bestIdx;
+    return { index: bestIdx, bestLen: bestLen };
   }
+  function matchPointIndex(dimIdx, r) { return matchPointDetailed(dimIdx, r).index; }
 
   function findRedoCandidate(dimName, r, allRecords, bank) {
     var used = {};
@@ -167,7 +170,9 @@
       base.summary = pickSummary(dimName, wrong[0].r);
       base.blocks = wrong.map(function (e) {
         var block = buildWeakBlock(e.r, e.seq);
-        block.pointIndex = matchPointIndex(dimIdx, e.r);
+        var md = matchPointDetailed(dimIdx, e.r);
+        block.pointIndex = md.index;
+        block.pointMatched = md.bestLen > 0;
         block.redo = findRedoCandidate(dimName, e.r, allRecords, bank);
         return block;
       });

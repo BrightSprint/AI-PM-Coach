@@ -38,7 +38,9 @@
 
   /* ---------- 题目 → 知识点映射（与 goal-link 同口径：最长关键词优先） ---------- */
   function questionText(q) {
-    return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
+    /* 批次 8（一-4）统一口径：匹配文本 = 子考点 + 考核点 + 难点 + 题干，
+       与 goal-link 的练习相关度（relevanceOf）用同一组成，全应用只保留一个覆盖率口径。 */
+    return ((q.sub_topic || '') + ' ' + (q.exam_points || []).join(' ') + ' ' + (q.difficulty_points || []).join(' ') + ' ' + (q.stem || '')).toLowerCase();
   }
   /* 返回 { pointIndex, bestLen }：bestLen=0 表示无任何关键词命中（不算映射到知识点） */
   function matchPointDetailed(q, dimIndex, pointKeywords) {
@@ -129,6 +131,20 @@
     if (correct) { wb.mastered[qid] = isoTime; } else { delete wb.mastered[qid]; }
     wb.redo[qid] = { lastAt: isoTime, lastCorrect: !!correct };
     return wb;
+  }
+
+  /* ---------- 批次 8（二-1）：跨场景统一状态联动 ----------
+   * 口径：任一重做场景（错题本重做 / 复习作答 / 收藏重做 / 诊断重做）对某题的最近一次结果，
+   * 同时作用于错题本与复习队列两个状态：
+   *   答对 → 错题本记 mastered；该题若在复习队列中，按复习答对进阶（applyReviewResult）。
+   *   答错 → 错题本清除 mastered；该题若在复习队列中，按复习答错回退 stage 0。
+   * 不在复习队列的题不因重做被强行入队（入队仍只走测评/小测/练习的种子路径）；
+   * 绝不写 attempts。入参为两 store 现值，返回更新后的 { wrongbook, review }，页面负责落盘。 */
+  function applyRedoLinkage(wrongbook, review, qid, correct, isoTime, today) {
+    var wb = applyRedo(wrongbook, qid, correct, isoTime);
+    var rv = normalizeReview(review);
+    if (rv[qid]) { rv = applyReviewResult(rv, qid, correct, today); }
+    return { wrongbook: wb, review: rv };
   }
 
   /* ================= 二、阶段小测 =================
@@ -281,6 +297,7 @@
     normalizeWrongbook: normalizeWrongbook,
     wrongStats: wrongStats,
     applyRedo: applyRedo,
+    applyRedoLinkage: applyRedoLinkage,
     stagePool: stagePool,
     pickStageQuestions: pickStageQuestions,
     stageQuizPassed: stageQuizPassed,
