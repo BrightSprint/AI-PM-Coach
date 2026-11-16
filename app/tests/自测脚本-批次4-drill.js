@@ -94,13 +94,13 @@ function check(id, name, cond, extra) {
   check('DRL-05', '非法组题量回落 5', DL.pickGroup(BANK, 7, rng).length === 5);
 }
 
-/* DRL-06 / DAT-02R：index.html 数据键恰为十键 */
+/* DRL-06 / DAT-02R：index.html 数据键恰为十二键【批次 5 口径同步】 */
 {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const m = html.match(/var DATA_KEYS = \[([^\]]+)\]/);
   const keys = m ? [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]).sort() : [];
-  const want = ['aipm.appeals.v1', 'aipm.attempts.v1', 'aipm.drill.v1', 'aipm.inprogress.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.review.v1', 'aipm.snapshots.v1', 'aipm.stagequiz.v1', 'aipm.wrongbook.v1'];
-  check('DRL-06', 'DATA_KEYS 恰为十键（含 aipm.drill.v1）', JSON.stringify(keys) === JSON.stringify(want), keys.join(','));
+  const want = ['aipm.appeals.v1', 'aipm.attempts.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.inprogress.v1', 'aipm.learn.v1', 'aipm.notes.v1', 'aipm.quizcfg.v1', 'aipm.review.v1', 'aipm.snapshots.v1', 'aipm.stagequiz.v1', 'aipm.wrongbook.v1']; /* 【批次 5 口径同步】十键→十二键 */
+  check('DRL-06', 'DATA_KEYS 恰为十二键（含 aipm.drill.v1 与批次 5 两新键）【批次 5 同步】', JSON.stringify(keys) === JSON.stringify(want), keys.join(','));
   check('DRL-06', '导入校验对象键含 aipm.drill.v1', html.includes("'aipm.drill.v1'") && /objKeys = \[[^\]]*aipm\.drill\.v1/.test(html));
 }
 

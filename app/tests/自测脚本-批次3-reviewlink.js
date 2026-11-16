@@ -3,7 +3,9 @@
  * DAT-02R 按批次 3 修复规格加强：DATA_KEYS 必须与规格键逐项、逐序完全一致（不排序后比对），
  * 且导出 payload 的 data 恰含规格键、version 仍为 1，导入校验与清空均遍历同一 DATA_KEYS。
  * 【批次 4 修订】规格键由 9 键扩展为 10 键（新增 aipm.drill.v1 面试演练自评），继批次 3 后的第二次口径扩展；
- * 本脚本 DAT-02R 组预期已同步修订为 10 键。 */
+ * 本脚本 DAT-02R 组预期已同步修订为 10 键。
+ * 【批次 5 修订】DATA_KEYS 扩展为 12 键（新增 aipm.favorites.v1 / aipm.notes.v1）；导入必填仍为原 10 键
+ * （DATA_REQUIRED_KEYS），新键缺失按空数组写回；DAT-02R 组预期已同步修订为 12 键口径。 */
 'use strict';
 const fs = require('fs');
 const vm = require('vm');
@@ -155,21 +157,22 @@ t('REV-05', '本地日期口径（跨月/闰日加天）', () => {
   return (RL.addDaysStr('2026-01-31', 1) === '2026-02-01' && RL.addDaysStr('2026-12-31', 30) === '2027-01-30' && RL.todayStr(new Date(2026, 10, 13, 23, 59)) === '2026-11-13') || 'date math wrong';
 });
 
-/* ---------- DAT-02R（批次 4 修订规格：10 键，严格逐序；批次 3 时为 9 键） ---------- */
-const SPEC_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+/* ---------- DAT-02R（批次 5 修订规格：DATA_KEYS 12 键严格逐序；导入必填 10 键；批次 4 时为 10 键） ---------- */
+const SPEC_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'];
+const SPEC_REQUIRED_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1']; /* 【批次 5 口径同步】DATA_KEYS 十二键；导入必填仍为原十键（DATA_REQUIRED_KEYS） */;
 const html = fs.readFileSync('/home/hatch/workspace/ts-spaces/ai-pm-coach/index.html', 'utf8');
 function pageDataKeys() {
   const m = html.match(/var DATA_KEYS = \[([^\]]+)\]/);
   if (!m) return null;
   return [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]);
 }
-t('DAT-02R', '页面 DATA_KEYS 恰为规格 10 键（不多不少、逐序一致）【批次 4 修订】', () => {
+t('DAT-02R', '页面 DATA_KEYS 恰为规格 12 键（不多不少、逐序一致）【批次 5 修订】', () => {
   const keys = pageDataKeys();
   if (!keys) return 'DATA_KEYS not found';
   console.log('INFO DATA_KEYS actual: ' + JSON.stringify(keys));
   return eq(keys, SPEC_KEYS) || 'actual=' + JSON.stringify(keys);
 });
-t('DAT-02R-EXP', '导出 payload：version==1 且 data 恰含 10 键（按 DATA_KEYS 逐序构建）【批次 4 修订】', () => {
+t('DAT-02R-EXP', '导出 payload：version==1 且 data 恰含 12 键（按 DATA_KEYS 逐序构建）【批次 5 修订】', () => {
   const keys = pageDataKeys();
   if (!/return \{ app: 'ai-pm-coach', version: 1,/.test(html)) return 'export version literal != 1';
   if (!/DATA_KEYS\.forEach\(function\(key\)\{ data\[key\] = readStored\(key\); \}\);/.test(html)) return 'buildExportPayload does not iterate DATA_KEYS';
@@ -177,11 +180,16 @@ t('DAT-02R-EXP', '导出 payload：version==1 且 data 恰含 10 键（按 DATA_
   const payload = { app: 'ai-pm-coach', version: 1, data };
   return (payload.version === 1 && eq(Object.keys(payload.data), SPEC_KEYS)) || JSON.stringify(Object.keys(payload.data));
 });
-t('DAT-02R-IMP', '导入结构校验覆盖全部 10 键（逐键 hasOwnProperty 检查）【批次 4 修订】', () => {
-  return /for\(var i = 0; i < DATA_KEYS\.length; i\+\+\)\{\s*if\(!Object\.prototype\.hasOwnProperty\.call\(obj\.data, DATA_KEYS\[i\]\)\)/.test(html) || 'validateImport does not loop DATA_KEYS';
+t('DAT-02R-IMP', '导入结构校验：必填原 10 键逐键检查 + 新键存在须为数组【批次 5 修订】', () => {
+  const rm = html.match(/var DATA_REQUIRED_KEYS = \[([^\]]+)\]/);
+  const req = rm ? [...rm[1].matchAll(/'([^']+)'/g)].map(x => x[1]) : null;
+  if (!req || !eq(req, SPEC_REQUIRED_KEYS)) return 'DATA_REQUIRED_KEYS != 原十键: ' + JSON.stringify(req);
+  if (!/for\(var i = 0; i < DATA_REQUIRED_KEYS\.length; i\+\+\)\{\s*if\(!Object\.prototype\.hasOwnProperty\.call\(obj\.data, DATA_REQUIRED_KEYS\[i\]\)\)/.test(html)) return 'validateImport does not loop DATA_REQUIRED_KEYS';
+  if (!/newArrKeys = \['aipm\.favorites\.v1', 'aipm\.notes\.v1'\]/.test(html)) return 'new-key array validation missing';
+  return true;
 });
-t('DAT-02R-CLR', '导入写回与清空全部遍历同一 DATA_KEYS（10 键全覆盖）【批次 4 修订】', () => {
-  const writes = (html.match(/DATA_KEYS\.forEach\(function\(key\)\{\s*try \{\s*var v = pendingImport\.data\[key\];/g) || []).length;
+t('DAT-02R-CLR', '导入写回与清空全部遍历同一 DATA_KEYS（12 键全覆盖，缺失新键写空数组）【批次 5 修订】', () => {
+  const writes = (html.match(/DATA_KEYS\.forEach\(function\(key\)\{\s*try \{\s*var v = Object\.prototype\.hasOwnProperty\.call\(pendingImport\.data, key\) \? pendingImport\.data\[key\] : \[\];/g) || []).length;
   const clears = (html.match(/DATA_KEYS\.forEach\(function\(key\)\{ try \{ window\.localStorage\.removeItem\(key\); \} catch\(e\)\{\} \}\);/g) || []).length;
   return (writes === 1 && clears === 1) || 'writes=' + writes + ' clears=' + clears;
 });

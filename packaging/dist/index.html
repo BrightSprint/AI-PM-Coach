@@ -663,6 +663,40 @@
   .rv-feedback.is-ok{background:#F2F8F3;border:1px solid #CBE0D2;color:#2F5240}
   .rv-feedback.is-ng{background:#FBF1E6;border:1px solid #EFD3AE;color:#5C3D14}
 
+  /* ---------- Batch 5: 收藏 / 学习笔记 ---------- */
+  .fav-toggle{display:inline-flex;align-items:center;gap:5px;background:var(--surface);color:var(--muted);border:1px solid var(--border);font-size:13px;font-weight:600;padding:0 12px;height:34px;min-height:34px;border-radius:999px;white-space:nowrap}
+  .fav-toggle:hover{border-color:var(--primary);color:var(--primary)}
+  .fav-toggle[data-state="on"],.fav-toggle.is-on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .fav-toggle[data-state="on"]:hover,.fav-toggle.is-on:hover{color:#fff}
+  .quiz-meta .fav-toggle{margin-left:auto}
+  .wrong-item .fav-toggle,.sq-review-item .fav-toggle,.weak-block .fav-toggle,.redo-box .fav-toggle{margin-top:10px}
+  .fav-list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+  .fav-item-head{cursor:pointer}
+  .fav-expand-hint{margin:8px 0 0;font-size:12.5px;color:var(--faint)}
+  .fav-detail{display:none}
+  .fav-detail.show{display:block}
+  .fav-empty,.note-empty{font-size:14.5px;color:var(--muted);line-height:1.7;margin-top:18px}
+  #app-toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);background:var(--text-strong);color:#fff;font-size:14px;line-height:1.55;padding:11px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(25,24,23,.28);opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:80;max-width:min(92vw,520px);text-align:center}
+  #app-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #note-ctx-menu{position:fixed;display:none;z-index:90;width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 28px rgba(43,42,39,.18);padding:4px}
+  #note-ctx-menu button{width:100%;background:none;border:0;text-align:left;font-size:14px;color:var(--text);padding:8px 10px;border-radius:6px;min-height:36px}
+  #note-ctx-menu button:hover{background:var(--primary-soft);color:var(--primary)}
+  .note-editor{display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px}
+  .note-editor.show{display:block}
+  .note-editor label{display:block;font-size:13.5px;font-weight:600;color:var(--text-strong);margin-top:12px}
+  .note-editor label:first-child{margin-top:0}
+  .note-editor input,.note-editor textarea{width:100%;box-sizing:border-box;margin-top:6px;padding:11px 13px;font-size:14.5px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-family:inherit;line-height:1.6}
+  .note-editor textarea{min-height:110px;resize:vertical}
+  .note-editor input:focus,.note-editor textarea:focus{outline:2px solid var(--primary);outline-offset:1px}
+  .note-list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+  .note-text{margin:10px 0 0;font-size:15px;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word}
+  .note-remark{margin-top:10px;border-top:1px solid var(--border-soft);padding-top:8px}
+  .note-remark-text{margin:0 0 4px;font-size:13.5px;line-height:1.7;color:var(--muted);white-space:pre-wrap}
+  .note-remark-input{width:100%;box-sizing:border-box;min-height:72px;padding:10px 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-family:inherit;line-height:1.6;resize:vertical}
+  .note-remark-input:focus{outline:2px solid var(--primary);outline-offset:1px}
+  .note-delete-wrap{display:inline-flex;gap:8px;align-items:center}
+  .note-delete-btn.note-delete-confirm{background:#B4552D;border-color:#B4552D;color:#fff}
+
   /* ---------- Checklist ---------- */
   .check-wrap{flex:1;width:100%;max-width:760px;margin:0 auto;padding:32px 24px 56px}
   .check-group{margin-top:26px}
@@ -731,6 +765,7 @@
     <div id="resume-slot"></div>
     <div id="my-assessment-slot"></div>
     <div id="wrongbook-slot"></div>
+    <div id="favorites-slot"></div>
     <div id="drill-slot"></div>
     <div id="data-mgmt-slot"></div>
     <p style="text-align:center;margin:2px 0 14px"><button class="text-btn" type="button" data-goto="view-checklist">查看本版自测清单（复测对比与防崩溃加固逐项测试方法）</button></p>
@@ -880,7 +915,7 @@
     </div>
 
     <article class="quiz-card">
-      <p class="quiz-meta"><span id="q-num">#1</span><span aria-hidden="true">·</span><span class="q-dim" id="q-dim">AI 基础认知</span></p>
+      <p class="quiz-meta"><span id="q-num">#1</span><span aria-hidden="true">·</span><span class="q-dim" id="q-dim">AI 基础认知</span><button id="q-fav" class="fav-toggle" type="button" aria-pressed="false" data-state="off">☆ 收藏</button></p>
       <h2 class="quiz-stem" id="q-stem"></h2>
       <div class="quiz-options" id="q-options" role="group" aria-label="选项"></div>
     </article>
@@ -1042,6 +1077,14 @@
       <button class="btn-primary" type="button" data-goto="view-glossary">打开知识搜索</button>
     </div>
 
+    <div class="learn-rec" aria-label="学习笔记">
+      <div>
+        <b>学习笔记 · 我摘录的内容</b>
+        <p>在知识点、词条详情和演练页选中任意一段文字，点右键就能加入笔记；也可以在这里查看摘录、补备注，或直接新建一条。</p>
+      </div>
+      <button class="btn-primary" type="button" data-goto="view-notes">打开学习笔记</button>
+    </div>
+
     <h3 class="section-label" style="margin-top:32px">完整学习路径 · 6 阶段 / 27 个知识点</h3>
     <p class="section-desc">学习内容对应题库共 634 道核心题：每个知识点的练习区由 1 道入门题加按关键词从题库同维度匹配的真实题目（相关度优先、同相关度内按难度升序）组成。</p>
     <p class="section-desc">点任意知识点进入学习页：先看讲解和案例，再做一道带解析的练习。顺序就是建议的学习顺序。</p>
@@ -1061,6 +1104,7 @@
     <div class="doc-actions">
       <button class="btn-secondary" type="button" data-goto="view-drill">面试演练 · 开口讲一遍再自评</button>
       <button class="btn-secondary" type="button" data-goto="view-wrongbook">打开错题本 · 回看答错过的题</button>
+      <button class="btn-secondary" type="button" data-goto="view-favorites">打开收藏夹 · 回看收藏的题</button>
       <button class="btn-secondary" type="button" data-goto="view-intro">还没测过？先做测评定位短板</button>
     </div>
   </main>
@@ -1182,6 +1226,55 @@
     <div class="wb-stats" id="wb-stats"></div>
     <div class="chip-row wb-filter" id="wb-filter" role="group" aria-label="按维度筛选"></div>
     <div class="wb-list" id="wb-list"></div>
+  </main>
+</section>
+
+<!-- ==================== VIEW: FAVORITES ==================== -->
+<section class="view" id="view-favorites" aria-label="收藏夹">
+  <header class="topbar">
+    <button class="back-btn" type="button" data-goto="view-landing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      返回
+    </button>
+    <div class="topbar-note">收藏夹</div>
+    <span style="width:52px"></span>
+  </header>
+  <main class="learn-wrap">
+    <p class="doc-eyebrow">Favorites</p>
+    <h2 class="doc-title">收藏夹 · 收藏的题目都在这里</h2>
+    <p class="doc-lede">在答题页或结果页点☆收藏的题目会汇总到这里。点条目头部可展开全部选项与解析，还能就地重做 — 重做只在本页判对错，不影响测评记录。</p>
+    <p class="fav-empty" id="fav-empty">还没有收藏的题目。在答题页或结果页点☆收藏，就能把题目收进这里，方便随时回看。</p>
+    <div class="fav-list" id="fav-list"></div>
+  </main>
+</section>
+
+<!-- ==================== VIEW: NOTES ==================== -->
+<section class="view" id="view-notes" aria-label="学习笔记">
+  <header class="topbar">
+    <button class="back-btn" type="button" data-goto="view-learn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      学习路径
+    </button>
+    <div class="topbar-note">学习笔记</div>
+    <span style="width:76px"></span>
+  </header>
+  <main class="learn-wrap">
+    <p class="doc-eyebrow">Notes</p>
+    <h2 class="doc-title">学习笔记 · 我摘录的内容</h2>
+    <p class="doc-lede">这里汇总了你从知识点、词条和演练里摘录的内容。每条都能加备注、删除，也可以直接新建一条。</p>
+    <div class="plan-editor-actions" style="margin-top:16px">
+      <button class="btn-primary" type="button" id="note-new-btn" style="height:46px;font-size:15px;min-width:150px;padding:0 20px">新建笔记</button>
+    </div>
+    <div class="note-editor" id="note-editor">
+      <label>标题（可选）<input id="note-new-title" type="text" placeholder="给这条笔记起个标题，不填则记为「自定义笔记」"></label>
+      <label>正文<textarea id="note-new-text" placeholder="写下你的笔记…"></textarea></label>
+      <div class="plan-editor-actions">
+        <button class="btn-primary" type="button" id="note-new-save">保存笔记</button>
+        <button class="btn-secondary" type="button" id="note-new-cancel">取消</button>
+      </div>
+    </div>
+    <p class="note-empty" id="note-empty">还没有笔记。在学习页选中任意一段文字，点右键就能加入笔记；也可以点上方「新建笔记」直接写一条。</p>
+    <div class="note-list" id="note-list"></div>
   </main>
 </section>
 
@@ -1382,11 +1475,11 @@
       <div class="check-item" data-testid="CNT-06" data-module="题量18"><b>CNT-06 · 中途进度按 18 题恢复</b><p>模块：题量 18。前置：开始一轮测评并答完 5 题后关闭页面（aipm.inprogress.v1 已写入）。步骤：重新打开主页并点「继续作答」，继续答完余下题目。预期：主页出现恢复卡；恢复后从第 6 题继续，最终本轮总记录仍为 18 题且前 5 题记录保留。断言：<code>prog.records.length == 5 &amp;&amp; prog.records.length &lt; 18 &amp;&amp; restored.stepCount == 5 &amp;&amp; finalRecords.length == 18</code>。</p></div>
       <div class="check-item" data-testid="CNT-07" data-module="题量18"><b>CNT-07 · 快照保存门槛不变（≥10 题）</b><p>模块：题量 18。前置：同 CNT-01。步骤：完成一轮 18 题测评后查 aipm.snapshots.v1。预期：恰好新增 1 条快照且 answered 为 18，快照生成的题量门槛仍为 ≥10（未随题量改动）。断言：<code>snapshotsAdded == 1 &amp;&amp; lastSnapshot.answered == 18 &amp;&amp; lastSnapshot.answered &gt;= 10</code>。</p></div>
       <div class="check-item" data-testid="DAT-01" data-module="数据管理"><b>DAT-01 · 数据概览计数与存储一致</b><p>模块：数据管理。前置：本地已有任意测评／快照／学习／申诉数据（可为空）。步骤：打开落地页「数据管理」区，读取四个计数并与 localStorage 逐项对比。预期：概览数字与存储实际长度完全一致。断言：<code>domCount('attempts') == (JSON.parse(localStorage['aipm.attempts.v1']||'[]')).length &amp;&amp; domCount('snapshots') == snapshots.length &amp;&amp; domCount('learned') == learn.learned.length &amp;&amp; domCount('appeals') == appeals.length</code>。</p></div>
-      <div class="check-item" data-testid="DAT-02R" data-module="数据管理"><b>DAT-02R · 导出 JSON 结构（版本 + 十键）【批次 4 修订】</b><p>模块：数据管理。前置：同 DAT-01。步骤：点「导出全部数据」，解析下载的 JSON 文件。预期：文件带版本字段，data 区恰好含十个指定键，内容与当前存储一致。断言：<code>payload.version == 1 &amp;&amp; Object.keys(payload.data).sort() == ['aipm.appeals.v1','aipm.attempts.v1','aipm.drill.v1','aipm.inprogress.v1','aipm.learn.v1','aipm.quizcfg.v1','aipm.review.v1','aipm.snapshots.v1','aipm.stagequiz.v1','aipm.wrongbook.v1'] &amp;&amp; deepEqual(payload.data['aipm.snapshots.v1'], storedSnapshots)</code>。修订原因（批次 4，继批次 3 后的第二次口径扩展）：批次 1 时用户数据只有五键；批次 2 新增测评设置键 aipm.quizcfg.v1，批次 3 再新增错题本 aipm.wrongbook.v1、阶段小测 aipm.stagequiz.v1、复习队列 aipm.review.v1（九键）；批次 4 新增面试演练自评键 aipm.drill.v1 — 导出/导入/清空的覆盖口径扩展为全部 10 键，导出结构 version 不变（仍为 1），其余 DAT 用例不变。页内 DATA_KEYS 与导入校验对象键含 aipm.drill.v1 已由批次 4 自测脚本静态核对通过（DRL-06）。</p></div>
+      <div class="check-item" data-testid="DAT-02R" data-module="数据管理"><b>DAT-02R · 导出 JSON 结构（版本 + 十二键）【批次 5 修订】</b><p>模块：数据管理。前置：同 DAT-01。步骤：点「导出全部数据」，解析下载的 JSON 文件。预期：文件带版本字段，data 区恰好含十二个指定键，内容与当前存储一致。断言：<code>payload.version == 1 &amp;&amp; Object.keys(payload.data).sort() == ['aipm.appeals.v1','aipm.attempts.v1','aipm.drill.v1','aipm.favorites.v1','aipm.inprogress.v1','aipm.learn.v1','aipm.notes.v1','aipm.quizcfg.v1','aipm.review.v1','aipm.snapshots.v1','aipm.stagequiz.v1','aipm.wrongbook.v1'] &amp;&amp; deepEqual(payload.data['aipm.snapshots.v1'], storedSnapshots)</code>。修订原因（批次 4，继批次 3 后的第二次口径扩展）：批次 1 时用户数据只有五键；批次 2 新增测评设置键 aipm.quizcfg.v1，批次 3 再新增错题本 aipm.wrongbook.v1、阶段小测 aipm.stagequiz.v1、复习队列 aipm.review.v1（九键）；批次 4 新增面试演练自评键 aipm.drill.v1 — 导出/导入/清空的覆盖口径扩展为全部 10 键，导出结构 version 不变（仍为 1），其余 DAT 用例不变。页内 DATA_KEYS 与导入校验对象键含 aipm.drill.v1 已由批次 4 自测脚本静态核对通过（DRL-06）。第三次口径扩展（批次 5，收藏+笔记）：新增 aipm.favorites.v1 与 aipm.notes.v1，口径扩展为全部 12 键；导入向后兼容旧版 10 键备份（新键缺失按空处理）</p></div>
       <div class="check-item" data-testid="DAT-03" data-module="数据管理"><b>DAT-03 · 导出→清空→导入还原计数一致</b><p>模块：数据管理。前置：本地已有至少 1 次测评、1 条快照、1 个已学知识点。步骤：记录四项计数 → 导出备份 → 确认清空 → 导入该备份并确认覆盖 → 再读四项计数。预期：导入后四项计数与导出前逐项相同。断言：<code>countsAfterImport deepEqual countsBeforeExport</code>。</p></div>
       <div class="check-item" data-testid="DAT-04" data-module="数据管理"><b>DAT-04 · 导入结构校验拦截且不覆盖</b><p>模块：数据管理。前置：本地已有数据并记录计数。步骤：分别选择 (a) 非 JSON 文件、(b) 缺少任一数据键的 JSON、(c) 某数组键类型错误的 JSON 导入。预期：每次都提示导入失败原因，原有数据与计数不变。断言：<code>∀badFile: dataMsg.isError == true &amp;&amp; countsAfter == countsBefore &amp;&amp; storedBytesUnchanged == true</code>。</p></div>
       <div class="check-item" data-testid="DAT-05" data-module="数据管理"><b>DAT-05 · 导入二次确认前不写入</b><p>模块：数据管理。前置：已有一份合法备份文件，本地计数已知。步骤：点「导入数据」选择该文件——在确认面板出现后、点击确认之前读取计数；再点「取消」。预期：确认前计数不变；取消后计数仍不变且不出现已导入提示。断言：<code>exists('#data-import-confirm') &amp;&amp; countsBeforeConfirm == countsInitial &amp;&amp; afterCancel counts == countsInitial</code>。</p></div>
-      <div class="check-item" data-testid="DAT-06" data-module="数据管理"><b>DAT-06 · 清空二次确认后十键均不存在</b><p>模块：数据管理。前置：十键中至少三键有数据。步骤：点「清空全部数据」——确认面板出现时先查十键仍在；再点「确认清空」后复查。预期：确认前数据未删；确认后十键均不存在、概览计数全为 0、「我的测评」回到空状态。断言：<code>beforeConfirm: keysPresent &gt;= 3; afterConfirm: DATA_KEYS.every(k =&gt; localStorage.getItem(k) === null) &amp;&amp; counts == {attempts:0,snapshots:0,learned:0,appeals:0}</code>。</p></div>
+      <div class="check-item" data-testid="DAT-06" data-module="数据管理"><b>DAT-06 · 清空二次确认后十二键均不存在</b><p>模块：数据管理。前置：十二键中至少三键有数据。步骤：点「清空全部数据」——确认面板出现时先查十二键仍在；再点「确认清空」后复查。预期：确认前数据未删；确认后十二键均不存在、概览计数全为 0、「我的测评」回到空状态。断言：<code>beforeConfirm: keysPresent &gt;= 3; afterConfirm: DATA_KEYS.every(k =&gt; localStorage.getItem(k) === null) &amp;&amp; counts == {attempts:0,snapshots:0,learned:0,appeals:0}</code>。</p></div>
       <div class="check-item" data-testid="DAT-07" data-module="数据管理"><b>DAT-07 · 数据操作纯本地零网络</b><p>模块：数据管理。前置：开启网络请求监控。步骤：依次执行导出、导入（含确认）、清空（含确认）。预期：全过程不发出任何网络请求（导出为本地 Blob 下载、导入为本地文件读取）。断言：<code>networkRequestsDuringDataOps.length == 0</code>。</p></div>
     </div>
 
@@ -1473,6 +1566,37 @@
       <div class="check-item" data-testid="ABN-09" data-module="异常"><b>ABN-09 · 存储损坏逐 key 兜底【已执行】</b><p>模块：异常。前置：无头 Chromium 打开应用。步骤：对 10 个键逐一注入 6 种坏值（坏 JSON、纯数字、纯字符串、null、错型数组、截断 JSON），每次注入后整页刷新。预期：60 种组合下均不白屏、无 pageerror、回到落地页且标题正常。断言：<code>∀key, ∀bad: view == view-landing &amp;&amp; title 非空 &amp;&amp; newPageErrors == 0</code>（实测通过。本轮曾发现 attempts/snapshots 在「合法 JSON 但类型错误」时抛错，已给两个加载函数加数组+对象条目过滤并复测通过，申诉提交处同类隐患一并加固）。</p></div>
       <div class="check-item" data-testid="ABN-10" data-module="异常"><b>ABN-10 · 存储损坏全 key 同时损坏【已执行】</b><p>模块：异常。前置：同 ABN-09。步骤：10 个键同时注入坏 JSON → 刷新 → 开始测评并答 1 题。预期：不白屏、无 pageerror、测评可正常启动作答（题库就绪校验不误报）。断言：<code>view == view-landing &amp;&amp; quiz 可启动 &amp;&amp; errors == 0</code>（实测通过）。</p></div>
     </div>
+
+    <div class="check-group"><h3>十二、批次 5 结构化自测用例（收藏 FAV / 数据管理 DAT-12）</h3>
+      <div class="check-item" data-testid="FAV-01" data-module="收藏"><b>FAV-01 · 答题页收藏切换写存储</b><p>模块：收藏。前置：开始一轮测评进入答题页，记录当前题题干与维度并回查题库得 qid。步骤：点答题页 #q-fav。预期：按钮变为★已收藏且 data-state=on；aipm.favorites.v1 恰新增 1 条且 qid 与当前题一致、含数值型 ts。断言：<code>stored.length == 1 &amp;&amp; String(stored[0].qid) == String(currentQ.id) &amp;&amp; typeof stored[0].ts == 'number'</code>。</p></div>
+      <div class="check-item" data-testid="FAV-02" data-module="收藏"><b>FAV-02 · 取消收藏移除且按钮回退</b><p>模块：收藏。前置：同 FAV-01 且当前题已收藏。步骤：再次点 #q-fav。预期：存储中该条被移除、按钮回退为☆收藏且 data-state=off。断言：<code>stored.length == 0 &amp;&amp; btn.dataset.state == 'off' &amp;&amp; btn.textContent.includes('☆')</code>。</p></div>
+      <div class="check-item" data-testid="FAV-03" data-module="收藏"><b>FAV-03 · 刷新后持久化</b><p>模块：收藏。前置：答题页已收藏当前题。步骤：整页刷新 → 重新进入答题页定位同一题（或直接查存储与收藏夹）。预期：存储条目仍在；收藏夹含该题条目。断言：<code>afterReload stored.length == 1 &amp;&amp; favItems == 1</code>。</p></div>
+      <div class="check-item" data-testid="FAV-04" data-module="收藏"><b>FAV-04 · 收藏夹倒序与字段</b><p>模块：收藏。前置：直接写入两条收藏（ts 一早一晚，qid 取题库前两题）。步骤：打开收藏夹读 .fav-item 顺序与文案。预期：按 ts 倒序（晚收藏在前）；每条含题干、维度、难度与收藏时间。断言：<code>items[0] 含晚收藏题干 &amp;&amp; items[1] 含早收藏题干 &amp;&amp; 每条含维度/难度/收藏于</code>。</p></div>
+      <div class="check-item" data-testid="FAV-05" data-module="收藏"><b>FAV-05 · 展开详情与题库逐字一致</b><p>模块：收藏。前置：收藏夹有 1 条。步骤：点条目头部展开 .fav-detail。预期：四选项文本、正确答案标注与解析与 QUIZ_BANK 对应题逐字一致。断言：<code>detail 含 A-D 四选项原文 &amp;&amp; 含正确答案解析 distractor_analysis[answer]</code>。</p></div>
+      <div class="check-item" data-testid="FAV-06" data-module="收藏"><b>FAV-06 · 重做即时判对错且不写测评记录</b><p>模块：收藏。前置：收藏夹有 1 条，记录 aipm.attempts.v1 原始字节。步骤：展开重做 → 先选错误选项看判错 → （新条目）选正确选项看判对。预期：.fav-redo-verdict 即时显示对错与解析；attempts 字节不变、无新测评记录。断言：<code>verdict 含答错/答对文案 &amp;&amp; attemptsAfter == attemptsBefore</code>。</p></div>
+      <div class="check-item" data-testid="FAV-07" data-module="收藏"><b>FAV-07 · 收藏夹内取消收藏</b><p>模块：收藏。前置：收藏夹有 1 条。步骤：点该条 .fav-remove-btn。预期：条目消失、#fav-empty 空状态出现、存储清空。断言：<code>favItems == 0 &amp;&amp; favEmpty 可见 &amp;&amp; stored.length == 0</code>。</p></div>
+      <div class="check-item" data-testid="FAV-08" data-module="收藏"><b>FAV-08 · 跨页同步</b><p>模块：收藏。前置：完成一轮测评到达结果页且至少答错 1 题。步骤：答题页先收藏当前题 → 答完到结果页查同题 .fav-toggle 状态；在结果页取消某题收藏 → 打开收藏夹复查。预期：结果页同题按钮为已收藏；在结果页取消后收藏夹同步消失该条。断言：<code>resultToggle.dataset.state == 'on' &amp;&amp; 取消后 favItems 不含该题</code>。</p></div>
+      <div class="check-item" data-testid="FAV-09" data-module="收藏"><b>FAV-09 · favorites 坏值矩阵</b><p>模块：收藏。前置：无头 Chromium 打开应用。步骤：依次向 aipm.favorites.v1 注入非数组字符串/数字/null/条目缺字段/未知 qid 后刷新并打开收藏夹。预期：均不白屏、按空或过滤处理、pageerror 为 0。断言：<code>∀bad: view 正常 &amp;&amp; favItems &lt;= 合法条数 &amp;&amp; newPageErrors == 0</code>。</p></div>
+      <div class="check-item" data-testid="FAV-10" data-module="收藏"><b>FAV-10 · 入口可达与空状态</b><p>模块：收藏。前置：清空收藏。步骤：从落地页收藏夹卡进入；再从学习首页按钮与复习完成页按钮分别进入。预期：三处入口均到达 view-favorites 且空状态 #fav-empty 可见。断言：<code>三入口 click 后 activeView == 'view-favorites' &amp;&amp; favEmpty 可见</code>。</p></div>
+      <div class="check-item" data-testid="DAT-12" data-module="数据管理"><b>DAT-12 · 旧版 10 键备份导入兼容</b><p>模块：数据管理。前置：构造仅含原 10 键的合法备份 payload（无 favorites/notes 键）。步骤：走页面导入流程（选文件 → 确认导入）。预期：导入成功、新键落为 '[]'、概览收藏/笔记计数均为 0、无报错。断言：<code>localStorage['aipm.favorites.v1'] == '[]' &amp;&amp; localStorage['aipm.notes.v1'] == '[]' &amp;&amp; counts.favorites == 0 &amp;&amp; counts.notes == 0</code>。</p></div>
+      <div class="check-item" data-testid="DAT-13" data-module="数据管理"><b>DAT-13 · 十二键往返</b><p>模块：数据管理。前置：造收藏 1 条 + 笔记 1 条并记录两键原始值。步骤：导出 → 清空（确认后 12 键全无）→ 导入该备份并确认。预期：两键逐字还原、概览计数与导出前一致。断言：<code>favAfter == favBefore &amp;&amp; notesAfter == notesBefore &amp;&amp; countsAfter == countsBefore</code>。</p></div>
+    </div>
+
+    <div class="check-group"><h3>十三、批次 5 结构化自测用例（学习笔记 NOTE）</h3>
+      <div class="check-item" data-testid="NOTE-01" data-module="学习笔记"><b>NOTE-01 · 知识点详情选区右键加入</b><p>模块：学习笔记。前置：打开任一知识点详情页。步骤：用 Selection API 选中一段正文 → 派发 contextmenu → 点 #note-ctx-add。预期：菜单出现；aipm.notes.v1 新增 1 条，text 与选区一致、source.type=kp、label=知识点标题。断言：<code>notes.length == 1 &amp;&amp; notes[0].text == selectedText &amp;&amp; notes[0].source.type == 'kp'</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-02" data-module="学习笔记"><b>NOTE-02 · 词条详情选区右键加入</b><p>模块：学习笔记。前置：打开任一词条详情页。步骤：同 NOTE-01。预期：新增条目 source.type=glossary、label=词条名。断言：<code>notes[0].source.type == 'glossary' &amp;&amp; notes[0].source.label == term</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-03" data-module="学习笔记"><b>NOTE-03 · 演练条目页选区右键加入</b><p>模块：学习笔记。前置：开始一组演练进入演练进行页。步骤：同 NOTE-01（选中题干或正文一段）。预期：新增条目 source.type=drill。断言：<code>notes[0].source.type == 'drill' &amp;&amp; notes[0].text == selectedText</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-04" data-module="学习笔记"><b>NOTE-04 · 无选区右键不拦截</b><p>模块：学习笔记。前置：知识点详情页且无任何选区。步骤：派发 contextmenu。预期：#note-ctx-menu 不显示（display != block）。断言：<code>menuVisible == false</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-05" data-module="学习笔记"><b>NOTE-05 · 菜单关闭四路径</b><p>模块：学习笔记。前置：已通过选区右键打开菜单。步骤：分别以点别处（mousedown）、按 Esc、滚动、resize 四种方式关闭，每次关闭后重新打开再验。预期：四种方式均使菜单隐藏。断言：<code>四路径后 menuVisible 均为 false</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-06" data-module="学习笔记"><b>NOTE-06 · 重复加入去重</b><p>模块：学习笔记。前置：同一选区已加入笔记 1 条。步骤：再次对同一选区右键加入。预期：toast 含「已在笔记中」、条数不变。断言：<code>toast 含已在笔记中 &amp;&amp; notes.length 不变</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-07" data-module="学习笔记"><b>NOTE-07 · 超长选区截断</b><p>模块：学习笔记。前置：构造长度 &gt;2000 字的选区文本（注入长段落后全选）。步骤：右键加入。预期：存储 text 长度恰 2000、toast 含截断说明。断言：<code>notes[0].text.length == 2000 &amp;&amp; toast 含截断</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-08" data-module="学习笔记"><b>NOTE-08 · 跨段落选区</b><p>模块：学习笔记。前置：知识点详情页含相邻两段文本。步骤：构造跨两段的 Range 选区 → 右键加入。预期：存储 text 同时含两段文字。断言：<code>notes[0].text 含段一关键词 &amp;&amp; 含段二关键词</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-09" data-module="学习笔记"><b>NOTE-09 · 备注编辑保存并持久化</b><p>模块：学习笔记。前置：笔记页有 1 条笔记。步骤：点编辑备注 → 填入备注 → 保存 → 刷新页面重进笔记页。预期：备注落盘、updatedAt 更新、列表按 updatedAt 重排且刷新后备注仍在。断言：<code>stored.remark == 新备注 &amp;&amp; updatedAt &gt; before &amp;&amp; reload 后列表含该备注</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-10" data-module="学习笔记"><b>NOTE-10 · 删除两步确认</b><p>模块：学习笔记。前置：笔记页有 1 条笔记。步骤：点一次删除（不确认）→ 点取消 → 再点删除 → 点确认删除。预期：第一次点不删、取消路径保留、确认后删除且空状态出现。断言：<code>firstClick 后 length == 1 &amp;&amp; cancel 后 length == 1 &amp;&amp; confirm 后 length == 0</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-11" data-module="学习笔记"><b>NOTE-11 · 自由笔记新建</b><p>模块：学习笔记。前置：笔记页。步骤：新建带标题笔记一条、新建不带标题笔记一条、再试正文为空保存。预期：两条均落盘，source.label 分别为标题与「自定义笔记」；正文为空被拦截（toast 提示且条数不变）。断言：<code>labels 含标题与自定义笔记 &amp;&amp; emptySave 后 length 不变</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-12" data-module="学习笔记"><b>NOTE-12 · 笔记页字段与排序</b><p>模块：学习笔记。前置：写入两条 updatedAt 一新一旧的笔记。步骤：打开笔记页读 .note-item 顺序与字段。预期：按 updatedAt 倒序；每条含来源 chip（.note-source）、正文（.note-text）与创建时间/更新时间显示。断言：<code>items[0] 为较新条 &amp;&amp; 每条 source/text/time 均非空</code>。</p></div>
+      <div class="check-item" data-testid="NOTE-13" data-module="学习笔记"><b>NOTE-13 · notes 坏值矩阵</b><p>模块：学习笔记。前置：无头 Chromium 打开应用。步骤：依次向 aipm.notes.v1 注入非数组字符串/数字/null/条目缺 text/条目缺 id/混合合法与非法条目后刷新并打开笔记页。预期：均不白屏；缺 text/id 的条目被剔除、合法条目保留、pageerror 为 0。断言：<code>∀bad: view 正常 &amp;&amp; noteItems == 合法条数 &amp;&amp; newPageErrors == 0</code>。</p></div>
+    </div>
   </main>
 </section>
 
@@ -1489,6 +1613,9 @@
     </div>
   </div>
 </div>
+
+<div id="app-toast" role="status" aria-live="polite"></div>
+<div id="note-ctx-menu"><button type="button" id="note-ctx-add">加入学习笔记</button></div>
 
 <script src="assets/quiz-bank.js"></script>
 <script src="assets/cat-engine.js"></script>
@@ -1519,6 +1646,8 @@
       activateView(id);
       if(id === 'view-learn'){ renderPath(); renderPlanPanel(); renderReviewBanner(); }
       if(id === 'view-wrongbook'){ renderWrongbook(); }
+      if(id === 'view-favorites'){ renderFavorites(); }
+      if(id === 'view-notes'){ renderNotes(); }
       if(id === 'view-drill'){ renderDrillHome(); }
       if(id === 'view-glossary'){ renderGlossary(); }
       if(id === 'view-intro'){ renderQuizSettings(); }
@@ -1719,6 +1848,7 @@
       elNext.disabled = true;
       elNextLabel.textContent = (current === total - 1) ? '查看结果' : '下一题';
       qStartAt = Date.now();
+      refreshQuizFav();
     }
     function newCatSession(cfg){
       cfg = cfg || quizCfg;
@@ -2083,6 +2213,8 @@
     function buildWeakBlockEl(block, bi, dg){
       var wrap = document.createElement('div'); wrap.className = 'weak-block';
       var h = document.createElement('h4'); h.textContent = block.title; wrap.appendChild(h);
+      var favRec = (typeof block.seq === 'number' && records[block.seq - 1]) ? records[block.seq - 1] : null;
+      if(favRec && favRec.questionId != null){ wrap.appendChild(makeFavButton(favRec.questionId)); }
       var ev = document.createElement('div'); ev.className = 'weak-evidence'; ev.textContent = block.evidence; wrap.appendChild(ev);
       var cause = document.createElement('p'); cause.className = 'weak-cause'; cause.textContent = block.cause; wrap.appendChild(cause);
       var next = document.createElement('p'); next.className = 'weak-next';
@@ -2112,6 +2244,7 @@
     function buildRedoBox(q){
       var box = document.createElement('div'); box.className = 'redo-box';
       var stem = document.createElement('p'); stem.className = 'practice-stem'; stem.textContent = q.stem; box.appendChild(stem);
+      if(q.id != null){ box.appendChild(makeFavButton(q.id)); }
       var opts = document.createElement('div'); opts.className = 'practice-opts';
       var explain = document.createElement('div'); explain.className = 'practice-explain';
       LETTERS.forEach(function(letter){
@@ -3190,7 +3323,9 @@
     })();
 
     /* ================= 数据管理（导出 / 导入 / 清空 · 纯本地文件操作） ================= */
-    var DATA_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+    var DATA_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'];
+    /* 导入必填仍为原 10 键；批次 5 两个新键缺失时按空处理（向后兼容旧备份） */
+    var DATA_REQUIRED_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
     var pendingImport = null;
     var pendingClear = false;
     var dataMsg = '';
@@ -3203,19 +3338,23 @@
       var snaps = readStored('aipm.snapshots.v1');
       var appeals = readStored('aipm.appeals.v1');
       var learn = readStored('aipm.learn.v1');
+      var favs = readStored('aipm.favorites.v1');
+      var notes = readStored('aipm.notes.v1');
       return {
         attempts: Array.isArray(att) ? att.length : 0,
         snapshots: Array.isArray(snaps) ? snaps.length : 0,
         learned: (learn && Array.isArray(learn.learned)) ? learn.learned.length : 0,
-        appeals: Array.isArray(appeals) ? appeals.length : 0
+        appeals: Array.isArray(appeals) ? appeals.length : 0,
+        favorites: Array.isArray(favs) ? favs.length : 0,
+        notes: Array.isArray(notes) ? notes.length : 0
       };
     }
     function validateImport(obj){
       if(!obj || typeof obj !== 'object' || Array.isArray(obj)){ return '文件不是有效的备份 JSON 对象'; }
       if(obj.version == null){ return '备份缺少 version 版本字段'; }
       if(!obj.data || typeof obj.data !== 'object' || Array.isArray(obj.data)){ return '备份缺少 data 数据区'; }
-      for(var i = 0; i < DATA_KEYS.length; i++){
-        if(!Object.prototype.hasOwnProperty.call(obj.data, DATA_KEYS[i])){ return '备份缺少数据键 ' + DATA_KEYS[i]; }
+      for(var i = 0; i < DATA_REQUIRED_KEYS.length; i++){
+        if(!Object.prototype.hasOwnProperty.call(obj.data, DATA_REQUIRED_KEYS[i])){ return '备份缺少数据键 ' + DATA_REQUIRED_KEYS[i]; }
       }
       var arrKeys = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.appeals.v1'];
       for(var j = 0; j < arrKeys.length; j++){
@@ -3226,6 +3365,14 @@
       for(var k = 0; k < objKeys.length; k++){
         var v2 = obj.data[objKeys[k]];
         if(v2 !== null && (typeof v2 !== 'object' || Array.isArray(v2))){ return objKeys[k] + ' 应为对象或 null'; }
+      }
+      /* 批次 5 新键：存在时须为数组（条目不深校验）；缺失时不报错，导入按空数组处理 */
+      var newArrKeys = ['aipm.favorites.v1', 'aipm.notes.v1'];
+      for(var m = 0; m < newArrKeys.length; m++){
+        if(Object.prototype.hasOwnProperty.call(obj.data, newArrKeys[m])){
+          var v3 = obj.data[newArrKeys[m]];
+          if(v3 !== null && !Array.isArray(v3)){ return newArrKeys[m] + ' 应为数组或 null'; }
+        }
       }
       return null;
     }
@@ -3282,7 +3429,7 @@
       if(!pendingImport){ return; }
       DATA_KEYS.forEach(function(key){
         try {
-          var v = pendingImport.data[key];
+          var v = Object.prototype.hasOwnProperty.call(pendingImport.data, key) ? pendingImport.data[key] : [];
           if(v === null){ window.localStorage.removeItem(key); }
           else { window.localStorage.setItem(key, JSON.stringify(v)); }
         } catch(e){}
@@ -3340,7 +3487,9 @@
       counts.innerHTML = '<span>测评次数 <b data-count="attempts">' + c.attempts + '</b></span>' +
         '<span>能力快照 <b data-count="snapshots">' + c.snapshots + '</b></span>' +
         '<span>学习已学 <b data-count="learned">' + c.learned + '</b> 个知识点</span>' +
-        '<span>申诉记录 <b data-count="appeals">' + c.appeals + '</b></span>';
+        '<span>申诉记录 <b data-count="appeals">' + c.appeals + '</b></span>' +
+        '<span>收藏题目 <b data-count="favorites">' + c.favorites + '</b></span>' +
+        '<span>学习笔记 <b data-count="notes">' + c.notes + '</b></span>';
       sec.appendChild(counts);
       var acts = document.createElement('div'); acts.className = 'data-actions';
       var expBtn = document.createElement('button'); expBtn.type = 'button'; expBtn.className = 'btn-primary'; expBtn.id = 'data-export-btn'; expBtn.textContent = '导出全部数据';
@@ -3373,7 +3522,7 @@
       if(pendingClear){
         var panel2 = document.createElement('div'); panel2.className = 'data-confirm'; panel2.id = 'data-clear-confirm';
         var pp2 = document.createElement('p');
-        pp2.textContent = '确认清空全部数据？测评记录、能力快照、未完成的测评进度、申诉记录、学习进度、测评设置、错题本掌握状态、阶段小测成绩、复习队列和面试演练自评都会被删除（共 10 类本地数据），此操作不可撤销。如需保留，请先导出备份。';
+        pp2.textContent = '确认清空全部数据？测评记录、能力快照、未完成的测评进度、申诉记录、学习进度、测评设置、错题本掌握状态、阶段小测成绩、复习队列、面试演练自评、收藏的题目和学习笔记都会被删除（共 12 类本地数据），此操作不可撤销。如需保留，请先导出备份。';
         var row2 = document.createElement('div'); row2.className = 'row';
         var ok2 = document.createElement('button'); ok2.type = 'button'; ok2.className = 'btn-primary'; ok2.id = 'data-clear-confirm-btn'; ok2.textContent = '确认清空';
         ok2.addEventListener('click', confirmClear);
@@ -3438,6 +3587,7 @@
     function renderHomeExtras(){
       renderDataMgmt();
       renderWrongbookSlot();
+      renderFavoritesSlot();
       renderDrillSlot();
       /* ---- 未完成测评恢复卡 ---- */
       var rSlot = document.getElementById('resume-slot');
@@ -3656,6 +3806,7 @@
         var hh = document.createElement('h4');
         hh.textContent = '错题 ' + (i + 1) + ' · ' + r.dimension + '（' + (r.src || '') + ' · 难度 ' + r.difficulty + '）：' + (q ? q.stem : r.stem || '');
         item.appendChild(hh);
+        if(q){ item.appendChild(makeFavButton(q.id)); }
         var p1 = document.createElement('p');
         if(r.skipped || !r.userAnswer){ p1.innerHTML = '<b>你跳过了这道题。</b>'; }
         else { p1.innerHTML = '<b>你的答案：' + r.userAnswer + '</b> — ' + (q ? (q.options[r.userAnswer] || '') : ''); }
@@ -4200,6 +4351,7 @@
         var hh = document.createElement('h4');
         hh.textContent = '第 ' + (i + 1) + ' 题（' + q.src + ' · 难度 ' + q.difficulty + '）：' + q.stem;
         item.appendChild(hh);
+        item.appendChild(makeFavButton(q.id));
         var p1 = document.createElement('p');
         p1.innerHTML = a.userAnswer
           ? ('<b>你的答案：' + a.userAnswer + '</b> — ' + (q.options[a.userAnswer] || '') + (a.correct ? ' ✓' : ''))
@@ -4325,9 +4477,453 @@
       b1.addEventListener('click', function(){ show('view-learn'); });
       var b2 = document.createElement('button'); b2.type = 'button'; b2.className = 'btn-secondary'; b2.textContent = '打开错题本';
       b2.addEventListener('click', function(){ show('view-wrongbook'); });
-      acts.appendChild(b1); acts.appendChild(b2); host.appendChild(acts);
+      var b3 = document.createElement('button'); b3.type = 'button'; b3.className = 'btn-secondary'; b3.textContent = '打开收藏夹';
+      b3.addEventListener('click', function(){ show('view-favorites'); });
+      acts.appendChild(b1); acts.appendChild(b2); acts.appendChild(b3); host.appendChild(acts);
       window.scrollTo(0, 0);
     }
+
+    /* ================= 批次 5：收藏 / 学习笔记 =================
+       纯本地功能：收藏存 aipm.favorites.v1（[{qid, ts}]），笔记存
+       aipm.notes.v1；零联网、零 LLM。收藏重做只在本页内判对错，
+       绝不写 aipm.attempts.v1 或任何测评记录。 */
+    var FAV_KEY = 'aipm.favorites.v1';
+    var NOTES_KEY = 'aipm.notes.v1';
+    function loadFavorites(){
+      var raw = null;
+      try { raw = JSON.parse(window.localStorage.getItem(FAV_KEY) || 'null'); } catch(e){}
+      if(!Array.isArray(raw)){ return []; }
+      var byId = bankById();
+      var seen = {};
+      return raw.filter(function(f){
+        if(!f || typeof f !== 'object'){ return false; }
+        if(!byId[f.qid]){ return false; }
+        if(typeof f.ts !== 'number'){ return false; }
+        var k = String(f.qid);
+        if(seen[k]){ return false; }
+        seen[k] = true;
+        return true;
+      });
+    }
+    function saveFavorites(list){
+      try { window.localStorage.setItem(FAV_KEY, JSON.stringify(list)); } catch(e){}
+    }
+    function favIndexOf(list, qid){
+      for(var i = 0; i < list.length; i++){ if(String(list[i].qid) === String(qid)){ return i; } }
+      return -1;
+    }
+    function isFavorite(qid){
+      return favIndexOf(loadFavorites(), qid) >= 0;
+    }
+    function toggleFavorite(qid){
+      var list = loadFavorites();
+      var idx = favIndexOf(list, qid);
+      if(idx >= 0){ list.splice(idx, 1); saveFavorites(list); return false; }
+      list.push({ qid: qid, ts: Date.now() });
+      saveFavorites(list);
+      return true;
+    }
+    function removeFavorite(qid){
+      saveFavorites(loadFavorites().filter(function(f){ return String(f.qid) !== String(qid); }));
+    }
+    function syncFavBtn(btn, qid){
+      var on = isFavorite(qid);
+      btn.textContent = on ? '★ 已收藏' : '☆ 收藏';
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btn.setAttribute('data-state', on ? 'on' : 'off');
+      btn.classList.toggle('is-on', on);
+    }
+    function refreshAllFavButtons(){
+      document.querySelectorAll('.fav-toggle').forEach(function(btn){
+        var qid = btn.getAttribute('data-fav-qid');
+        if(qid !== null && qid !== ''){ syncFavBtn(btn, qid); }
+        else if(btn.id === 'q-fav'){ refreshQuizFav(); }
+      });
+    }
+    function makeFavButton(qid){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fav-toggle';
+      btn.setAttribute('data-fav-qid', String(qid));
+      syncFavBtn(btn, qid);
+      btn.addEventListener('click', function(){
+        var q = bankById()[String(qid)];
+        toggleFavorite(q ? q.id : qid);
+        refreshAllFavButtons();
+      });
+      return btn;
+    }
+    function refreshQuizFav(){
+      var btn = document.getElementById('q-fav');
+      if(!btn){ return; }
+      if(!currentDecision || !currentDecision.question){
+        btn.removeAttribute('data-fav-qid');
+        btn.textContent = '☆ 收藏';
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('data-state', 'off');
+        btn.classList.remove('is-on');
+        return;
+      }
+      btn.setAttribute('data-fav-qid', String(currentDecision.question.id));
+      syncFavBtn(btn, currentDecision.question.id);
+    }
+    (function bindQuizFav(){
+      var btn = document.getElementById('q-fav');
+      if(!btn){ return; }
+      btn.addEventListener('click', function(){
+        if(!currentDecision || !currentDecision.question){ return; }
+        toggleFavorite(currentDecision.question.id);
+        refreshAllFavButtons();
+      });
+    })();
+    function favFmtTime(ts){
+      var d = new Date(ts);
+      function p(n){ return (n < 10 ? '0' : '') + n; }
+      return fmtDate(ts) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+    /* ---------- 落地页收藏夹入口 ---------- */
+    function renderFavoritesSlot(){
+      var slot = document.getElementById('favorites-slot');
+      if(!slot){ return; }
+      var list = loadFavorites();
+      slot.innerHTML = '';
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'wb-entry-btn';
+      var div = document.createElement('div');
+      var b = document.createElement('b'); b.textContent = '收藏夹';
+      var s = document.createElement('span');
+      s.textContent = list.length
+        ? ('已收藏 ' + list.length + ' 道题。点开可回看题干、全部选项与解析，还能就地重做（重做不影响测评记录）。')
+        : '已收藏 0 道题。在答题页或结果页点☆收藏，就能把题目收进这里，方便随时回看。';
+      div.appendChild(b); div.appendChild(s); btn.appendChild(div);
+      var go = document.createElement('span'); go.className = 'wb-go'; go.textContent = '打开收藏夹 →';
+      btn.appendChild(go);
+      btn.addEventListener('click', function(){ show('view-favorites'); });
+      slot.appendChild(btn);
+    }
+    /* ---------- 收藏夹视图 ---------- */
+    function renderFavorites(){
+      var listEl = document.getElementById('fav-list');
+      var emptyEl = document.getElementById('fav-empty');
+      if(!listEl){ return; }
+      var byId = bankById();
+      var list = loadFavorites().slice().sort(function(a, b){ return b.ts - a.ts; });
+      listEl.innerHTML = '';
+      if(emptyEl){ emptyEl.style.display = list.length ? 'none' : ''; }
+      list.forEach(function(f){
+        var q = byId[f.qid];
+        if(q){ listEl.appendChild(buildFavItem(f, q)); }
+      });
+    }
+    function buildFavItem(f, q){
+      var item = document.createElement('article'); item.className = 'fav-item wb-item';
+      var head = document.createElement('div'); head.className = 'fav-item-head';
+      head.setAttribute('role', 'button'); head.setAttribute('tabindex', '0');
+      var headTop = document.createElement('div'); headTop.className = 'wb-item-head';
+      var dim = document.createElement('span'); dim.className = 'wb-dim'; dim.textContent = q.dimension;
+      var meta = document.createElement('span'); meta.className = 'wb-meta';
+      meta.textContent = (q.src ? q.src + ' · ' : '') + '难度 ' + q.difficulty + ' · 收藏于 ' + favFmtTime(f.ts);
+      headTop.appendChild(dim); headTop.appendChild(meta);
+      head.appendChild(headTop);
+      var stem = document.createElement('p'); stem.className = 'wb-stem'; stem.textContent = q.stem;
+      head.appendChild(stem);
+      var hint = document.createElement('p'); hint.className = 'fav-expand-hint'; hint.textContent = '点击展开选项与解析';
+      head.appendChild(hint);
+      item.appendChild(head);
+      var detail = document.createElement('div'); detail.className = 'fav-detail';
+      var opts = document.createElement('ul'); opts.className = 'wb-opts';
+      LETTERS.forEach(function(L){
+        var li = document.createElement('li');
+        li.textContent = L + '．' + q.options[L] + (L === q.answer ? '（正确答案）' : '');
+        opts.appendChild(li);
+      });
+      detail.appendChild(opts);
+      var da = q.distractor_analysis || {};
+      var ans = document.createElement('p'); ans.className = 'wb-detail';
+      ans.innerHTML = '<b>正确答案 ' + q.answer + ' 的解析：</b>「' + (da[q.answer] || '') + '」';
+      detail.appendChild(ans);
+      if(q.exam_points && q.exam_points.length){
+        var ep = document.createElement('p'); ep.className = 'wb-detail';
+        ep.innerHTML = '<b>考核点：</b>' + q.exam_points.join('；');
+        detail.appendChild(ep);
+      }
+      item.appendChild(detail);
+      function toggleDetail(){
+        var open = detail.classList.toggle('show');
+        hint.textContent = open ? '点击收起' : '点击展开选项与解析';
+      }
+      head.addEventListener('click', toggleDetail);
+      head.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleDetail(); } });
+      var acts = document.createElement('div'); acts.className = 'wb-actions fav-actions';
+      var redoBtn = document.createElement('button'); redoBtn.type = 'button'; redoBtn.className = 'sq-btn fav-redo-btn'; redoBtn.textContent = '重做本题';
+      var removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'sq-btn fav-remove-btn'; removeBtn.textContent = '取消收藏';
+      acts.appendChild(redoBtn); acts.appendChild(removeBtn);
+      item.appendChild(acts);
+      var redoBox = document.createElement('div'); redoBox.className = 'fav-redo redo-box';
+      redoBtn.addEventListener('click', function(){
+        var open = redoBox.classList.toggle('show');
+        redoBtn.textContent = open ? '收起重做' : '重做本题';
+        if(open && !redoBox.children.length){ buildFavRedo(redoBox, q); }
+      });
+      item.appendChild(redoBox);
+      removeBtn.addEventListener('click', function(){
+        removeFavorite(q.id);
+        refreshAllFavButtons();
+        renderFavorites();
+        renderFavoritesSlot();
+      });
+      return item;
+    }
+    function buildFavRedo(box, q){
+      var opts = document.createElement('div'); opts.className = 'practice-opts';
+      var verdict = document.createElement('div'); verdict.className = 'practice-explain fav-redo-verdict';
+      LETTERS.forEach(function(letter){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'p-opt';
+        var lt = document.createElement('span'); lt.className = 'opt-letter'; lt.textContent = letter;
+        b.appendChild(lt); b.appendChild(document.createTextNode(q.options[letter]));
+        b.addEventListener('click', function(){
+          var all = opts.querySelectorAll('.p-opt');
+          all.forEach(function(o, j){
+            o.disabled = true;
+            if(LETTERS[j] === q.answer){ o.classList.add('is-correct'); }
+          });
+          var right = letter === q.answer;
+          if(!right){ b.classList.add('is-wrong'); }
+          /* 收藏重做只在本页即时判对错：不写 attempts、不写任何测评 / 错题本记录 */
+          var da = q.distractor_analysis || {};
+          verdict.innerHTML = '';
+          var hb = document.createElement('b');
+          hb.textContent = right ? '答对了。' : '这次选 ' + letter + '，正确答案是 ' + q.answer + '。';
+          verdict.appendChild(hb);
+          verdict.appendChild(document.createTextNode(' 你所选选项的解析：「' + (da[letter] || '') + '」' + (right ? '' : ' 正确选项的解析：「' + (da[q.answer] || '') + '」')));
+          verdict.classList.add('show');
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(opts); box.appendChild(verdict);
+    }
+
+    /* ---------- 学习笔记：存储 ---------- */
+    function loadNotes(){
+      var raw = null;
+      try { raw = JSON.parse(window.localStorage.getItem(NOTES_KEY) || 'null'); } catch(e){}
+      if(!Array.isArray(raw)){ return []; }
+      var types = ['kp', 'glossary', 'drill', 'custom'];
+      return raw.filter(function(n){ return n && typeof n === 'object' && typeof n.text === 'string' && n.id != null && String(n.id) !== ''; })
+        .map(function(n){
+          var src = (n.source && typeof n.source === 'object') ? n.source : {};
+          var created = typeof n.createdAt === 'number' ? n.createdAt : Date.now();
+          return {
+            id: String(n.id),
+            text: n.text,
+            source: { type: types.indexOf(src.type) >= 0 ? src.type : 'custom', label: (typeof src.label === 'string' && src.label) ? src.label : '自定义笔记' },
+            remark: typeof n.remark === 'string' ? n.remark : '',
+            createdAt: created,
+            updatedAt: typeof n.updatedAt === 'number' ? n.updatedAt : created
+          };
+        });
+    }
+    function saveNotes(list){
+      try { window.localStorage.setItem(NOTES_KEY, JSON.stringify(list)); } catch(e){}
+    }
+    function addNote(text, source){
+      var t = String(text == null ? '' : text).trim();
+      var truncated = false;
+      if(t.length > 2000){ t = t.slice(0, 2000); truncated = true; }
+      if(!t){ return { status: 'empty', truncated: truncated }; }
+      var src = { type: (source && source.type) ? source.type : 'custom', label: (source && source.label) ? source.label : '自定义笔记' };
+      var notes = loadNotes();
+      var dup = notes.some(function(n){ return n.source.type === src.type && n.source.label === src.label && n.text === t; });
+      if(dup){ return { status: 'duplicate', truncated: truncated }; }
+      var now = Date.now();
+      notes.push({ id: 'note-' + now + '-' + Math.floor(Math.random() * 1e6), text: t, source: src, remark: '', createdAt: now, updatedAt: now });
+      saveNotes(notes);
+      return { status: 'added', truncated: truncated };
+    }
+    var toastTimer = null;
+    function showToast(msg){
+      var t = document.getElementById('app-toast');
+      if(!t){ return; }
+      t.textContent = msg;
+      t.classList.add('show');
+      if(toastTimer){ clearTimeout(toastTimer); }
+      toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+    }
+    /* ---------- 学习笔记：笔记页 ---------- */
+    var noteArmed = null;
+    function disarmNoteDelete(){
+      if(!noteArmed){ return; }
+      noteArmed.btn.textContent = '删除';
+      noteArmed.btn.classList.remove('note-delete-confirm');
+      noteArmed.cancel.style.display = 'none';
+      noteArmed = null;
+    }
+    function renderNotes(){
+      var listEl = document.getElementById('note-list');
+      var emptyEl = document.getElementById('note-empty');
+      if(!listEl){ return; }
+      noteArmed = null;
+      var notes = loadNotes().slice().sort(function(a, b){ return b.updatedAt - a.updatedAt; });
+      listEl.innerHTML = '';
+      if(emptyEl){ emptyEl.style.display = notes.length ? 'none' : ''; }
+      notes.forEach(function(n){ listEl.appendChild(buildNoteItem(n)); });
+    }
+    function buildNoteItem(n){
+      var item = document.createElement('article'); item.className = 'note-item wb-item';
+      var meta = document.createElement('div'); meta.className = 'wb-item-head';
+      var chip = document.createElement('span'); chip.className = 'wb-dim note-source'; chip.textContent = n.source.label;
+      var time = document.createElement('span'); time.className = 'wb-meta';
+      time.textContent = '创建 ' + favFmtTime(n.createdAt) + ' · 更新 ' + favFmtTime(n.updatedAt);
+      meta.appendChild(chip); meta.appendChild(time);
+      item.appendChild(meta);
+      var text = document.createElement('p'); text.className = 'note-text'; text.textContent = n.text;
+      item.appendChild(text);
+      var remarkWrap = document.createElement('div'); remarkWrap.className = 'note-remark';
+      function renderRemarkView(){
+        remarkWrap.innerHTML = '';
+        if(n.remark){
+          var rp = document.createElement('p'); rp.className = 'note-remark-text'; rp.textContent = '备注：' + n.remark;
+          remarkWrap.appendChild(rp);
+        }
+        var eb = document.createElement('button'); eb.type = 'button'; eb.className = 'wb-point-btn note-remark-edit-btn';
+        eb.textContent = n.remark ? '编辑备注' : '添加备注';
+        eb.addEventListener('click', renderRemarkEdit);
+        remarkWrap.appendChild(eb);
+      }
+      function renderRemarkEdit(){
+        remarkWrap.innerHTML = '';
+        var ta = document.createElement('textarea'); ta.className = 'note-remark-input'; ta.value = n.remark || ''; ta.placeholder = '写点备注，方便以后回看…';
+        remarkWrap.appendChild(ta);
+        var row = document.createElement('div'); row.className = 'wb-actions';
+        var save = document.createElement('button'); save.type = 'button'; save.className = 'sq-btn note-remark-save'; save.textContent = '保存备注';
+        var cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'sq-btn note-remark-cancel'; cancel.textContent = '取消';
+        save.addEventListener('click', function(){
+          var notes = loadNotes();
+          for(var i = 0; i < notes.length; i++){
+            if(notes[i].id === n.id){ notes[i].remark = ta.value.trim(); notes[i].updatedAt = Date.now(); break; }
+          }
+          saveNotes(notes);
+          renderNotes();
+        });
+        cancel.addEventListener('click', function(){ renderNotes(); });
+        row.appendChild(save); row.appendChild(cancel);
+        remarkWrap.appendChild(row);
+        ta.focus();
+      }
+      renderRemarkView();
+      item.appendChild(remarkWrap);
+      var acts = document.createElement('div'); acts.className = 'wb-actions';
+      var delWrap = document.createElement('span'); delWrap.className = 'note-delete-wrap';
+      var delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'sq-btn note-delete-btn'; delBtn.textContent = '删除';
+      var delCancel = document.createElement('button'); delCancel.type = 'button'; delCancel.className = 'sq-btn note-delete-cancel'; delCancel.textContent = '取消'; delCancel.style.display = 'none';
+      delBtn.addEventListener('click', function(){
+        if(noteArmed && noteArmed.btn === delBtn){
+          saveNotes(loadNotes().filter(function(x){ return x.id !== n.id; }));
+          noteArmed = null;
+          renderNotes();
+          return;
+        }
+        disarmNoteDelete();
+        delBtn.textContent = '确认删除？';
+        delBtn.classList.add('note-delete-confirm');
+        delCancel.style.display = '';
+        noteArmed = { wrap: delWrap, btn: delBtn, cancel: delCancel };
+      });
+      delCancel.addEventListener('click', function(){ disarmNoteDelete(); });
+      delWrap.appendChild(delBtn); delWrap.appendChild(delCancel);
+      acts.appendChild(delWrap);
+      item.appendChild(acts);
+      return item;
+    }
+    (function bindNoteEditor(){
+      var newBtn = document.getElementById('note-new-btn');
+      var editor = document.getElementById('note-editor');
+      if(!newBtn || !editor){ return; }
+      newBtn.addEventListener('click', function(){
+        var open = editor.classList.toggle('show');
+        if(open){ var ta = document.getElementById('note-new-text'); if(ta){ ta.focus(); } }
+      });
+      var cancel = document.getElementById('note-new-cancel');
+      if(cancel){ cancel.addEventListener('click', function(){ editor.classList.remove('show'); }); }
+      var save = document.getElementById('note-new-save');
+      if(save){
+        save.addEventListener('click', function(){
+          var titleEl = document.getElementById('note-new-title');
+          var textEl = document.getElementById('note-new-text');
+          var text = textEl ? textEl.value : '';
+          if(!text.trim()){ showToast('笔记正文不能为空'); if(textEl){ textEl.focus(); } return; }
+          var title = titleEl ? titleEl.value.trim() : '';
+          var res = addNote(text, { type: 'custom', label: title || '自定义笔记' });
+          if(res.status === 'duplicate'){ showToast('这段已在笔记中'); return; }
+          if(res.status !== 'added'){ showToast('笔记正文不能为空'); return; }
+          if(titleEl){ titleEl.value = ''; }
+          if(textEl){ textEl.value = ''; }
+          editor.classList.remove('show');
+          showToast(res.truncated ? '已加入学习笔记（原文较长，已截断为 2000 字）' : '已加入学习笔记');
+          renderNotes();
+        });
+      }
+    })();
+    /* ---------- 学习笔记：选区右键菜单 ---------- */
+    var noteCtxPending = null;
+    function hideNoteCtxMenu(){
+      var menu = document.getElementById('note-ctx-menu');
+      if(menu){ menu.style.display = 'none'; }
+      noteCtxPending = null;
+    }
+    function noteSourceForView(viewId){
+      if(viewId === 'view-learn-detail'){
+        var p = POINTS[currentPoint];
+        return { type: 'kp', label: p ? p.t : '知识点' };
+      }
+      if(viewId === 'view-glossary-detail'){
+        return { type: 'glossary', label: gloCurrent ? gloCurrent.term : '词条' };
+      }
+      if(viewId === 'view-drill-run'){
+        var e = (drillSession && drillSession.items) ? drillSession.items[drillSession.idx] : null;
+        return { type: 'drill', label: e ? (e.gid + ' · ' + String(e.question || e.title || '').slice(0, 20)) : '面试演练' };
+      }
+      return { type: 'custom', label: '自定义笔记' };
+    }
+    (function bindNoteCtxMenu(){
+      var menu = document.getElementById('note-ctx-menu');
+      var addBtn = document.getElementById('note-ctx-add');
+      if(!menu || !addBtn){ return; }
+      ['view-learn-detail', 'view-glossary-detail', 'view-drill-run'].forEach(function(viewId){
+        var view = document.getElementById(viewId);
+        if(!view){ return; }
+        view.addEventListener('contextmenu', function(e){
+          var sel = window.getSelection();
+          if(!sel || sel.isCollapsed || !sel.toString().trim()){ return; }
+          var range = null;
+          try { range = sel.getRangeAt(0); } catch(err){ return; }
+          if(!range || !view.contains(range.startContainer) || !view.contains(range.endContainer)){ return; }
+          e.preventDefault();
+          noteCtxPending = { text: sel.toString(), source: noteSourceForView(viewId) };
+          var x = e.clientX, y = e.clientY;
+          if(x + 170 > window.innerWidth){ x = Math.max(0, window.innerWidth - 170); }
+          if(y + 54 > window.innerHeight){ y = Math.max(0, window.innerHeight - 54); }
+          menu.style.left = x + 'px';
+          menu.style.top = y + 'px';
+          menu.style.display = 'block';
+        });
+      });
+      addBtn.addEventListener('click', function(){
+        if(!noteCtxPending){ hideNoteCtxMenu(); return; }
+        var res = addNote(noteCtxPending.text, noteCtxPending.source);
+        hideNoteCtxMenu();
+        if(res.status === 'duplicate'){ showToast('这段已在笔记中'); }
+        else if(res.status === 'added' && res.truncated){ showToast('已加入学习笔记（原文较长，已截断为 2000 字）'); }
+        else if(res.status === 'added'){ showToast('已加入学习笔记'); }
+        else { showToast('选区为空，没有加入笔记'); }
+      });
+      document.addEventListener('mousedown', function(e){
+        if(menu.style.display !== 'none' && !menu.contains(e.target)){ hideNoteCtxMenu(); }
+        if(noteArmed && !noteArmed.wrap.contains(e.target)){ disarmNoteDelete(); }
+      });
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ hideNoteCtxMenu(); } });
+      window.addEventListener('scroll', hideNoteCtxMenu, true);
+      window.addEventListener('resize', hideNoteCtxMenu);
+    })();
 
     renderPath();
     renderHomeExtras();

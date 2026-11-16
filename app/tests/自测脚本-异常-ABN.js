@@ -9,7 +9,7 @@ const { execSync } = require('child_process');
 const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
 const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
 const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
-const TEN_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 const CHROME = '/opt/meta-chromium/chrome';
 const CARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt', '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'];
 
@@ -236,7 +236,7 @@ function errorsSince(n) { return pageErrors.slice(n); }
     const page = await newPage(ctx);
     await goto(page);
     const badValues = ['{corrupt!!', '12345', '"just-a-string"', 'null', '[1,2,3]', '{"x":'];
-    for (const key of TEN_KEYS) {
+    for (const key of TWELVE_KEYS) {
       const fails = [];
       for (const bad of badValues) {
         const e0 = pageErrors.length;
@@ -261,7 +261,7 @@ function errorsSince(n) { return pageErrors.slice(n); }
     const page = await newPage(ctx);
     await goto(page);
     const e0 = pageErrors.length;
-    for (const key of TEN_KEYS) await lsSet(page, key, '{corrupt!!');
+    for (const key of TWELVE_KEYS) await lsSet(page, key, '{corrupt!!');
     await page.reload({ waitUntil: 'load' });
     await page.waitForTimeout(350);
     const view = await activeView(page);
@@ -309,8 +309,8 @@ function errorsSince(n) { return pageErrors.slice(n); }
     await lsSet(page, 'aipm.appeals.v1', [{ id: 'abn-seed', ts: Date.now(), text: 'ABN 种子申诉' }]);
     await lsSet(page, 'aipm.quizcfg.v1', { count: 18, dims: null, startDiff: 'normal', scope: 'all' });
     const before = {};
-    for (const k of TEN_KEYS) before[k] = await lsGet(page, k);
-    const nonNull = TEN_KEYS.filter(k => before[k] != null);
+    for (const k of TWELVE_KEYS) before[k] = await lsGet(page, k);
+    const nonNull = TWELVE_KEYS.filter(k => before[k] != null);
     /* 强杀全部 chromium 进程（模拟断电），不给任何收尾机会 */
     try { execSync("pkill -9 -f 'abn-profile' || true"); } catch (e) {}
     await new Promise(r => setTimeout(r, 1200));
@@ -319,7 +319,7 @@ function errorsSince(n) { return pageErrors.slice(n); }
     await goto(page);
     const view = await activeView(page);
     const after = {};
-    for (const k of TEN_KEYS) after[k] = await lsGet(page, k);
+    for (const k of TWELVE_KEYS) after[k] = await lsGet(page, k);
     const survived = nonNull.filter(k => after[k] === before[k]);
     const parseOk = nonNull.every(k => { if (after[k] == null) return true; try { JSON.parse(after[k]); return true; } catch (e) { return false; } });
     /* 强杀后应用完整性：不白屏、存活数据可解析、题库就绪校验不误报（可立即开始测评并作答）。

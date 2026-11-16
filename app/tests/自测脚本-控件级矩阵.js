@@ -1,7 +1,7 @@
 'use strict';
 /* 网页版控件级测试矩阵 · 实测脚本（无头 Chromium / Playwright-core）
  * 期望全部按冻结规格预先写死在本脚本断言中（0.55/0.45、全对 81/全错 32、18 题、
- * 严格 1–2 题阈值、快照四态/复测三态、子集规则、10 键、复习阶梯 1/3/7/14/30、
+ * 严格 1–2 题阈值、快照四态/复测三态、子集规则、12 键、复习阶梯 1/3/7/14/30、
  * 小测 5 题 3 过线、演练自评三档 3/5/10 组题）。
  * 每条断言对应矩阵一行（CTL 编号），结果 JSON 落 /tmp/ctl-results.json，截图落 /tmp/ctlshots/。 */
 const fs = require('fs');
@@ -10,7 +10,7 @@ const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modul
 const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
 const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
 const DIMS = ['AI 基础认知', '场景洞察', '产品设计', '数据与评估', '技术协作', '商业与落地'];
-const TEN_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 const SHOTS = '/tmp/ctlshots';
 fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -565,7 +565,7 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     await ctx.close();
   }
 
-  /* ============ CTX-H：数据管理 10 键全控件 ============ */
+  /* ============ CTX-H：数据管理 12 键全控件 ============ */
   {
     const { ctx, page } = await newPage({ acceptDownloads: true });
     await goto(page);
@@ -586,7 +586,7 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     await dl.saveAs(dlPath);
     const payload = JSON.parse(fs.readFileSync(dlPath, 'utf8'));
     const msgTxt = await textOf(page, '#data-msg');
-    check('DM-02/L-12', '「导出全部数据」→ 下载 JSON（version=1、恰 10 键、内容与存储一致）+ 成功提示', payload.version === 1 && JSON.stringify(Object.keys(payload.data).sort()) === JSON.stringify(TEN_KEYS.slice().sort()) && JSON.stringify(payload.data['aipm.snapshots.v1']) === JSON.stringify(seedSnaps) && msgTxt.includes('已导出'), 'keys=' + Object.keys(payload.data).length);
+    check('DM-02/L-12', '「导出全部数据」→ 下载 JSON（version=1、恰 12 键、内容与存储一致）+ 成功提示', payload.version === 1 && JSON.stringify(Object.keys(payload.data).sort()) === JSON.stringify(TWELVE_KEYS.slice().sort()) && JSON.stringify(payload.data['aipm.snapshots.v1']) === JSON.stringify(seedSnaps) && msgTxt.includes('已导出'), 'keys=' + Object.keys(payload.data).length);
     async function importFile(p) { const [fc] = await Promise.all([page.waitForEvent('filechooser', { timeout: 8000 }), page.click('#data-import-btn')]); await fc.setFiles(p); await page.waitForTimeout(450); }
     await importFile(dlPath);
     const confirmExists = await page.evaluate(() => !!document.getElementById('data-import-confirm'));
@@ -595,7 +595,7 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     await page.evaluate(() => { [...document.querySelectorAll('#data-import-confirm button')].find(b => b.textContent === '取消').click(); });
     await page.waitForTimeout(250);
     check('DM-04/L-16', '导入确认「取消」→ 面板关闭、计数不变、无已导入提示', JSON.stringify(await readCounts()) === JSON.stringify(counts0) && !(await page.evaluate(() => !!document.getElementById('data-import-confirm'))));
-    const badFiles = { notjson: 'this is not json', missing: JSON.stringify({ version: 1, data: { 'aipm.attempts.v1': [] } }), wrongtype: JSON.stringify({ version: 1, data: Object.fromEntries(TEN_KEYS.map(k => [k, k === 'aipm.attempts.v1' ? { bad: 1 } : null])) }) };
+    const badFiles = { notjson: 'this is not json', missing: JSON.stringify({ version: 1, data: { 'aipm.attempts.v1': [] } }), wrongtype: JSON.stringify({ version: 1, data: Object.fromEntries(TWELVE_KEYS.map(k => [k, k === 'aipm.attempts.v1' ? { bad: 1 } : null])) }) };
     let badOk = true; const badDet = [];
     for (const [name, content] of Object.entries(badFiles)) {
       const p = '/tmp/ctl-bad-' + name + '.json'; fs.writeFileSync(p, content);
@@ -610,18 +610,18 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     // 清空：先点清空出现确认 → 取消 → 再点 → 确认
     await page.click('#data-clear-btn'); await page.waitForTimeout(250);
     const clearTxt = await textOf(page, '#data-clear-confirm');
-    const keysBefore = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TEN_KEYS);
-    check('DM-06/L-14', '「清空全部数据」→ 确认面板列全十类（含面试演练自评）且确认前数据仍在', !!clearTxt && clearTxt.includes('面试演练自评') && clearTxt.includes('10 类') && keysBefore >= 5, (clearTxt || '').slice(0, 120) + ' keys=' + keysBefore);
+    const keysBefore = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TWELVE_KEYS);
+    check('DM-06/L-14', '「清空全部数据」→ 确认面板列全十类（含面试演练自评）且确认前数据仍在', !!clearTxt && clearTxt.includes('面试演练自评') && clearTxt.includes('12 类') && keysBefore >= 5, (clearTxt || '').slice(0, 120) + ' keys=' + keysBefore);
     await shot(page, '15-data-clear-confirm');
     await page.evaluate(() => { [...document.querySelectorAll('#data-clear-confirm button')].find(b => b.textContent === '取消').click(); });
     await page.waitForTimeout(200);
-    const keysAfterCancel = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TEN_KEYS);
+    const keysAfterCancel = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TWELVE_KEYS);
     check('DM-07/L-18', '清空「取消」→ 面板关闭、数据键仍在', keysAfterCancel >= 5 && !(await page.evaluate(() => !!document.getElementById('data-clear-confirm'))), 'keys=' + keysAfterCancel);
     await page.click('#data-clear-btn'); await page.waitForTimeout(200);
     await page.click('#data-clear-confirm-btn'); await page.waitForTimeout(350);
-    const keysAfter = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null), TEN_KEYS);
+    const keysAfter = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null), TWELVE_KEYS);
     const countsCleared = await readCounts();
-    check('DM-08/L-17', '「确认清空」→ 10 键全无、计数全 0、我的测评回空态', keysAfter.length === 0 && countsCleared.attempts === 0 && countsCleared.snapshots === 0 && countsCleared.learned === 0 && countsCleared.appeals === 0 && (await textOf(page, '#my-assessment-slot')).includes('完成测评后查看你的能力雷达图'), 'keysAfter=' + keysAfter.join(','));
+    check('DM-08/L-17', '「确认清空」→ 12 键全无、计数全 0、我的测评回空态', keysAfter.length === 0 && countsCleared.attempts === 0 && countsCleared.snapshots === 0 && countsCleared.learned === 0 && countsCleared.appeals === 0 && (await textOf(page, '#my-assessment-slot')).includes('完成测评后查看你的能力雷达图'), 'keysAfter=' + keysAfter.join(','));
     await importFile(dlPath);
     await page.click('#data-import-confirm-btn'); await page.waitForTimeout(400);
     check('DM-09/L-15', '「确认导入并覆盖」→ 四计数还原为导出前（1/1/2/1）', JSON.stringify(await readCounts()) === JSON.stringify(counts0), JSON.stringify(await readCounts()));

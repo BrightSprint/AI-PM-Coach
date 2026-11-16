@@ -9,7 +9,7 @@ const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modul
 const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
 const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
 const DIMS = ['AI 基础认知', '场景洞察', '产品设计', '数据与评估', '技术协作', '商业与落地'];
-const TEN_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 
 let pass = 0, fail = 0; const failures = [];
 function check(id, name, cond, detail) {
@@ -623,8 +623,8 @@ function snapSeed(over) {
     const dlPath = path.join('/tmp', 'aipm-export-test.json');
     await dl.saveAs(dlPath);
     const payload = JSON.parse(fs.readFileSync(dlPath, 'utf8'));
-    check('DAT-02R-UI', '导出 JSON：version=1、恰含十键、快照内容与存储一致',
-      payload.version === 1 && JSON.stringify(Object.keys(payload.data).sort()) === JSON.stringify(TEN_KEYS.slice().sort())
+    check('DAT-02R-UI', '导出 JSON：version=1、恰含十二键、快照内容与存储一致【批次 5 同步】',
+      payload.version === 1 && JSON.stringify(Object.keys(payload.data).sort()) === JSON.stringify(TWELVE_KEYS.slice().sort())
       && JSON.stringify(payload.data['aipm.snapshots.v1']) === JSON.stringify(seedSnaps),
       'keys=' + Object.keys(payload.data).length);
     // DAT-05：导入合法文件 → 确认前不写入 → 取消
@@ -646,7 +646,7 @@ function snapSeed(over) {
     const badFiles = {
       notjson: Buffer.from('this is not json', 'utf8'),
       missing: Buffer.from(JSON.stringify({ app: 'ai-pm-coach', version: 1, data: { 'aipm.attempts.v1': [] } }), 'utf8'),
-      wrongtype: Buffer.from(JSON.stringify({ app: 'ai-pm-coach', version: 1, data: Object.fromEntries(TEN_KEYS.map(k => [k, k === 'aipm.attempts.v1' ? { bad: 1 } : null])) }), 'utf8')
+      wrongtype: Buffer.from(JSON.stringify({ app: 'ai-pm-coach', version: 1, data: Object.fromEntries(TWELVE_KEYS.map(k => [k, k === 'aipm.attempts.v1' ? { bad: 1 } : null])) }), 'utf8')
     };
     let badAllOk = true; const badDetails = [];
     for (const [name, buf] of Object.entries(badFiles)) {
@@ -664,14 +664,14 @@ function snapSeed(over) {
     await page.click('#data-clear-btn');
     await page.waitForTimeout(300);
     const clearPanelText = await textOf(page, '#data-clear-confirm');
-    const keysBeforeConfirm = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TEN_KEYS);
+    const keysBeforeConfirm = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null).length, TWELVE_KEYS);
     await page.click('#data-clear-confirm-btn');
     await page.waitForTimeout(350);
-    const keysAfter = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null), TEN_KEYS);
+    const keysAfter = await page.evaluate(ks => ks.filter(k => window.localStorage.getItem(k) !== null), TWELVE_KEYS);
     const countsCleared = await readCounts();
     const mySlotAfter = await textOf(page, '#my-assessment-slot');
-    check('DAT-06', '清空确认前面板文案列全十类数据；确认后十键全无、计数 0、主页空状态',
-      keysBeforeConfirm >= 3 && clearPanelText && clearPanelText.includes('面试演练') && /10\s*类/.test(clearPanelText)
+    check('DAT-06', '清空确认前面板文案列全十二类数据；确认后十二键全无、计数 0、主页空状态【批次 5 同步】',
+      keysBeforeConfirm >= 3 && clearPanelText && clearPanelText.includes('面试演练') && /12\s*类/.test(clearPanelText)
       && keysAfter.length === 0 && countsCleared.attempts === 0 && countsCleared.snapshots === 0 && countsCleared.learned === 0 && countsCleared.appeals === 0
       && mySlotAfter.includes('完成测评后查看你的能力雷达图'),
       'panel=' + (clearPanelText || '').slice(0, 130) + ' keysAfter=' + keysAfter.join(','));

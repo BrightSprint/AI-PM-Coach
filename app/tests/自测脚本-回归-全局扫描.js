@@ -42,13 +42,13 @@ for (const w of gameWords) {
   console.log('INFO 游戏化词「' + w + '」出现 ' + occ.length + ' 处：');
   occ.forEach(o => console.log('   ' + o));
 }
-/* 5. localStorage 键清单 vs DATA_KEYS 十键 */
+/* 5. localStorage 键清单 vs DATA_KEYS 十二键【批次 5 口径同步】 */
 const keyRe = /aipm\.[a-z]+\.v1/g;
 const usedKeys = [...new Set(all.match(keyRe) || [])].sort();
 console.log('INFO 代码中出现的 aipm.* 键：' + JSON.stringify(usedKeys));
 const m = texts['index.html'].match(/var DATA_KEYS = \[([^\]]+)\]/);
 const dataKeys = [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]).sort();
-report('数据键全部纳入 DATA_KEYS 十键口径', JSON.stringify(usedKeys) === JSON.stringify(dataKeys),
+report('数据键全部纳入 DATA_KEYS 十二键口径【批次 5 同步】', JSON.stringify(usedKeys) === JSON.stringify(dataKeys),
   'used=' + usedKeys.length + ' dataKeys=' + dataKeys.length);
 /* 6. 语法检查（外置 + 内联） */
 for (const f of files.filter(x => x.endsWith('.js'))) {

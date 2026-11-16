@@ -106,7 +106,7 @@ const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modul
 const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
 const ORIGIN = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach';
 const CARGS = ['--no-sandbox', '--disable-dev-shm-usage', '--hatch-webgl-allowed-domains-file=/var/lib/hatch-browser/rootfs-base/usr/share/hatch/chromium/webgl-allowed-domains.txt', '--hatch-webgl-allowed-domains-sha256=8097045f0459c96c4cdc76e3a1af4e0f43f640b4b59c43d6db35e3641c0264c6'];
-const TEN_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1'];
+const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1', 'aipm.appeals.v1', 'aipm.learn.v1', 'aipm.quizcfg.v1', 'aipm.wrongbook.v1', 'aipm.stagequiz.v1', 'aipm.review.v1', 'aipm.drill.v1', 'aipm.favorites.v1', 'aipm.notes.v1'] /* 【批次 5 口径同步】原 TWELVE_KEYS 扩展为 12 键 */;
 
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/meta-chromium/chrome', args: CARGS });
@@ -178,7 +178,7 @@ const TEN_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v1',
   /* GLO-09 零存储零网络：快照取在「相关知识点跳转」之前——跳转走 openPoint 会正常写 learn 键，
      那是学习功能自身的持久化；知识搜索本身（检索/筛选/详情）不得写任何存储 */
   check('GLO-09', '知识搜索全程不新增 localStorage key、不发外部请求、无 pageerror',
-    JSON.stringify(keysBefore.filter(k => TEN_KEYS.includes(k))) === JSON.stringify(keysBeforeJump.filter(k => TEN_KEYS.includes(k))) &&
+    JSON.stringify(keysBefore.filter(k => TWELVE_KEYS.includes(k))) === JSON.stringify(keysBeforeJump.filter(k => TWELVE_KEYS.includes(k))) &&
     external.length === 0 && pageErrors.length === 0,
     'ext=' + external.length + ' err=' + pageErrors.length + ' keysDelta=' + keysBeforeJump.filter(k => !keysBefore.includes(k)).join(','));
   await browser.close();
