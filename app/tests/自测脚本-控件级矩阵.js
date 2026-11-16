@@ -79,6 +79,9 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     const { ctx, page } = await newPage();
     await goto(page);
     check('L-00', '落地页冷启动无报错且为 active 视图', (await activeView(page)) === 'view-landing' && pageErrors.length === 0, pageErrors.join('|'));
+    const landingTxt = await textOf(page, '#view-landing');
+    const hasSocialProof = await page.evaluate(() => !!document.querySelector('#view-landing .social-proof'));
+    check('L-00b', '落地页无社会证明假数据（批次 7 裁决：原「已有 1234 人完成测评」与头像墙须不存在）', !hasSocialProof && !(landingTxt || '').includes('1234') && !(landingTxt || '').includes('人完成测评'), (landingTxt || '').replace(/\s+/g, ' ').slice(0, 60));
     await shot(page, '01-landing-empty');
     const mySlot = await textOf(page, '#my-assessment-slot');
     check('L-04a', '我的测评空态：文案+开始测评按钮（快照四态之 0 条）', mySlot.includes('完成测评后查看你的能力雷达图') && mySlot.includes('开始测评'), (mySlot || '').slice(0, 80));
