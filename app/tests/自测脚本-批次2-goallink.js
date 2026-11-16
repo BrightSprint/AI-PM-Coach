@@ -57,6 +57,19 @@ function runSession(cfg, answerFn) {
   check('PLN-04', '置顶知识点排在计划最前', ordered.join() === '23,9,0,3', ordered.join());
 }
 
+// PLN-11（批次 6）「只学最弱维」待生效字段：旧数据兼容 + 往返不丢失 + 坏字段回落
+{
+  const legacy = GoalLink.normalizeQuizCfg({ count: 24, dims: ['技术协作'], startDiff: 'advanced', scope: 'all' }, DIMS);
+  const withPending = GoalLink.normalizeQuizCfg({ count: 18, dims: DIMS, startDiff: 'adaptive', scope: 'unseen', weakestPending: true, weakestNotice: { dim: '数据与评估', score: 45 } }, DIMS);
+  const roundtrip = GoalLink.normalizeQuizCfg(JSON.parse(JSON.stringify(withPending)), DIMS);
+  const corrupt = GoalLink.normalizeQuizCfg({ count: 99, weakestPending: 'yes', weakestNotice: { dim: 42 } }, DIMS);
+  check('PLN-11', '待生效字段旧数据兼容与往返', legacy.weakestPending === false && legacy.weakestNotice === null
+    && legacy.count === 24 && legacy.dims.join() === '技术协作' && legacy.startDiff === 'advanced' && legacy.scope === 'all'
+    && roundtrip.weakestPending === true && roundtrip.weakestNotice.dim === '数据与评估' && roundtrip.weakestNotice.score === 45
+    && corrupt.weakestPending === false && corrupt.weakestNotice === null && corrupt.count === 18,
+    'legacy=' + JSON.stringify([legacy.weakestPending, legacy.weakestNotice]) + ' rt=' + JSON.stringify(roundtrip.weakestNotice));
+}
+
 /* ---------- SET ---------- */
 // SET-01 子集维度抽题只出所选维度
 {

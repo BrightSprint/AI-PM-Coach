@@ -10,7 +10,9 @@
  *     { mode:'all'|'weakest'|'custom', dims:[维度名], pointIds:[知识点下标], pinnedFirst:[知识点下标] }
  * - 测评设置 quizcfg（新键 aipm.quizcfg.v1）：
  *     { count:12|18|24, dims:[维度名子集], startDiff:'adaptive'|'basic'|'advanced',
- *       scope:'unseen'|'wrongfirst'|'all' }
+ *       scope:'unseen'|'wrongfirst'|'all',
+ *       weakestPending:boolean（批次 6：「只学最弱维」待生效预选，旧数据缺省 false）,
+ *       weakestNotice:{dim,score}|null（批次 6：待生效已激活的一次性提示，展示后清空） }
  * - 知识点按维度分组与 diagnosis.js 的 POINTS_BY_DIM 保持一致（下标即 POINTS 下标）。
  */
 (function (global) {
@@ -88,6 +90,12 @@
     }
     if (START_DIFF_MAP[raw.startDiff] != null) cfg.startDiff = raw.startDiff;
     if (SCOPES.indexOf(raw.scope) >= 0) cfg.scope = raw.scope;
+    /* 批次 6：「只学最弱维」待生效状态（旧数据无此二字段时默认 false / null，向后兼容） */
+    cfg.weakestPending = raw.weakestPending === true;
+    cfg.weakestNotice =
+      (raw.weakestNotice && typeof raw.weakestNotice === 'object' && typeof raw.weakestNotice.dim === 'string')
+        ? { dim: raw.weakestNotice.dim, score: (typeof raw.weakestNotice.score === 'number' ? raw.weakestNotice.score : null) }
+        : null;
     return cfg;
   }
 

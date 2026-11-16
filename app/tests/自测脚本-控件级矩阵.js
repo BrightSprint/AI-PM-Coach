@@ -733,7 +733,18 @@ const MAIN = { opt: '#q-options .opt', next: '#q-next', skip: '#q-skip', stem: '
     await clickGoto(page, 'view-learn');
     const weakBtn = await page.evaluate(() => { const b = [...document.querySelectorAll('#plan-panel-slot .preset-btn')].find(x => x.textContent.includes('只学最弱维')); return b ? { dis: b.disabled, title: b.title } : null; });
     const planHint = await textOf(page, '#plan-panel-slot');
-    check('LN-04a', '无测评成绩时「只学最弱维」禁用且有原因提示', weakBtn && weakBtn.dis === true && planHint.includes('需要先完成一次测评'), JSON.stringify(weakBtn));
+    /* 【批次 6 口径变更】原断言为「无成绩时禁用并提示先测评」；现行为：任何时候可点选，
+       无成绩时进入「已选 · 待生效」，完成首次测评后自动按最弱维聚焦（全链路见 PLN-09）。 */
+    check('LN-04a', '无测评成绩时「只学最弱维」不禁用且有待生效引导', weakBtn && weakBtn.dis === false && planHint.includes('可以先选上') && planHint.includes('自动按最弱维'), JSON.stringify(weakBtn));
+    await page.evaluate(() => { const b = [...document.querySelectorAll('#plan-panel-slot .preset-btn')].find(x => x.textContent.includes('只学最弱维')); if (b) b.click(); });
+    await page.waitForTimeout(250);
+    const pendState = await page.evaluate(() => {
+      const b = [...document.querySelectorAll('#plan-panel-slot .preset-btn')].find(x => x.textContent.includes('只学最弱维'));
+      const cfg = JSON.parse(window.localStorage.getItem('aipm.quizcfg.v1') || 'null');
+      const panel = document.querySelector('#plan-panel-slot').textContent;
+      return { txt: b ? b.textContent : '', on: b ? b.classList.contains('is-on') : false, pending: cfg && cfg.weakestPending, hint: panel.includes('待生效') };
+    });
+    check('LN-04b', '无成绩点「只学最弱维」→ 已选·待生效（按钮态 + quizcfg 落盘 + 卡上明示）', pendState.txt.includes('待生效') && pendState.on === true && pendState.pending === true && pendState.hint === true, JSON.stringify(pendState));
     // 题目整理：空输入
     await page.click('#import-btn'); await page.waitForTimeout(200);
     const emptyMsg = await textOf(page, '#import-result');

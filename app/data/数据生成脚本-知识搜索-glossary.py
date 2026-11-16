@@ -6,10 +6,13 @@
   - glossary-frag-1.json / glossary-frag-2.json（知识库 104 条 + 补强篇 20 条的三段式拆分，共 124 条）
   - ~/workspace/pm-knowledge-bank/supplement2/补遗条目.md（补遗 23 条，正文为单段叙述，
     本脚本按下方 SPLITS 逐句归属表切成三段——逐句索引、每句恰用一次，文本逐字来自原文、零转写）
+  - ~/workspace/pm-knowledge-bank/supplement3/补遗条目.md（补遗二期 13 条，同上，
+    按 SPLITS3 逐句归属表切分；框架工具层 6 条为应用工具、基础根条目 7 条为技术术语）
 输出：
-  - ~/workspace/ts-spaces/ai-pm-coach/assets/glossary.js（var GLOSSARY_BANK = [...]，共 147 条）
+  - ~/workspace/ts-spaces/ai-pm-coach/assets/glossary.js（var GLOSSARY_BANK = [...]，共 160 条）
 口径：三段只能由原文拆分重组；原文缺段时的通用补写已在 frag 数据中以 supp 字段标注；
-补遗 23 条三段均有原文材料，supp 一律为空，另加 batch:"supplement2" 标记。
+补遗 23 条三段均有原文材料，supp 一律为空，另加 batch:"supplement2" 标记；
+补遗二期 13 条同口径，supp 一律为空，另加 batch:"supplement3" 标记。
 """
 import json
 import re
@@ -21,6 +24,7 @@ WS = HERE.parent
 FRAG1 = HERE / 'glossary-frag-1.json'
 FRAG2 = HERE / 'glossary-frag-2.json'
 SUPP2_MD = WS / 'pm-knowledge-bank' / 'supplement2' / '补遗条目.md'
+SUPP3_MD = WS / 'pm-knowledge-bank' / 'supplement3' / '补遗条目.md'
 OUT = WS / 'ts-spaces' / 'ai-pm-coach' / 'assets' / 'glossary.js'
 
 # 补遗逐句归属表：c=概念介绍 u=使用方案 n=注意事项（0 基句序号，每句恰出现一次）
@@ -77,10 +81,72 @@ META = [
 ]
 CATS_BY_CHAPTER = [(1, 20, '技术术语'), (21, 22, '应用工具'), (23, 23, '产品名词')]
 
+# 补遗二期逐句归属表：13 条均为「概念 3 句 / 使用 1 句 / 注意 1 句」的五句结构
+SPLITS3 = {n: dict(c=[0, 1, 2], u=[3], n=[4]) for n in range(1, 14)}
+# 补遗二期关键词与相关知识点（kp 口径同上：有真关联才链）
+META3 = [
+    (['LangGraph', '状态图', '图编排', '工作流编排', 'Agent 框架', '检查点'], 14),
+    (['LangChain', '开发框架', '链式调用', '组件拼装', '应用开发'], 14),
+    (['Dify', '低代码', '应用开发平台', '可视化编排', '快速原型'], 14),
+    (['LlamaIndex', '数据框架', '数据接入', 'RAG', '索引构建'], 19),
+    (['CrewAI', 'AutoGen', '多智能体框架', '角色分工', '智能体协作'], 14),
+    (['vLLM', 'Ollama', '推理引擎', '本地部署', '模型服务'], 13),
+    (['ReAct', '推理行动', '思考-行动-观察', 'Agent 范式', '工具调用循环'], 14),
+    (['Planning', 'Reflection', '任务规划', '自我反思', '纠错机制'], 14),
+    (['机器学习', '监督学习', '无监督学习', '半监督学习', '数据规律'], 0),
+    (['SFT', '指令微调', '监督微调', '指令数据', '微调阶段'], 2),
+    (['Temperature', '温度', 'Top-p', '采样参数', '随机性控制'], 0),
+    (['Benchmark', '基准测试', '公开榜单', 'MMLU', '模型评测'], 18),
+    (['可观测性', '链路追踪', 'Tracing', 'LangSmith', '日志监控'], 23),
+]
+CATS3_BY_CHAPTER = [(1, 6, '应用工具'), (7, 13, '技术术语')]
+
 
 def fail(msg):
     print('FAIL:', msg)
     sys.exit(1)
+
+
+def parse_supp_md(path, expect, splits, meta, cats_by_chapter, id_base, batch):
+    """解析补遗 MD：逐句归属切三段 + 字符多重集逐字校验，返回条目列表。"""
+    from collections import Counter
+    md = path.read_text(encoding='utf-8')
+    parts = re.split(r'### \*\*(.+?)\*\*', md)
+    raw = []
+    for i in range(1, len(parts), 2):
+        title = parts[i].strip().rstrip('：:')
+        body = parts[i + 1]
+        body = re.sub(r'^# .*', '', body, flags=re.M).split('### ')[0].strip().replace('\n', '')
+        sents = [s for s in re.split(r'(?<=。)', body) if s.strip()]
+        raw.append((title, body, sents))
+    if len(raw) != expect:
+        fail(f'{path.name} 条目应为 {expect}，实际 {len(raw)}')
+    out = []
+    for n, (title, body, sents) in enumerate(raw, 1):
+        sp = splits[n]
+        used = sorted(sp['c'] + sp['u'] + sp['n'])
+        if used != list(range(len(sents))):
+            fail(f'{batch} 第 {n} 条《{title}》句归属不完整：used={used} total={len(sents)}')
+        join = lambda idxs: ''.join(sents[i] for i in idxs)
+        cat = next(c for lo, hi, c in cats_by_chapter if lo <= n <= hi)
+        kw, kp = meta[n - 1]
+        e = {
+            'id': f'KB-{id_base + n:03d}',
+            'term': title,
+            'cat': cat,
+            'concept': join(sp['c']),
+            'usage': join(sp['u']),
+            'notes': join(sp['n']),
+            'supp': [],
+            'kw': kw,
+            'kp': kp,
+            'batch': batch,
+        }
+        # 逐字校验：三段拼接（按概念/使用/注意的归属重组后）字符多重集与原文一致
+        if Counter(e['concept'] + e['usage'] + e['notes']) != Counter(body):
+            fail(f'{batch} 第 {n} 条《{title}》三段与原文字符不一致')
+        out.append(e)
+    return out
 
 
 def main():
@@ -93,53 +159,20 @@ def main():
         if e['id'] != f'KB-{i:03d}':
             fail(f'frag id 不连续：{e["id"]} != KB-{i:03d}')
 
-    # ---- 补遗解析 ----
-    md = SUPP2_MD.read_text(encoding='utf-8')
-    parts = re.split(r'### \*\*(.+?)\*\*', md)
-    raw = []
-    for i in range(1, len(parts), 2):
-        title = parts[i].strip().rstrip('：:')
-        body = parts[i + 1]
-        body = re.sub(r'^# .*', '', body, flags=re.M).split('### ')[0].strip().replace('\n', '')
-        sents = [s for s in re.split(r'(?<=。)', body) if s.strip()]
-        raw.append((title, body, sents))
-    if len(raw) != 23:
-        fail(f'补遗条目应为 23，实际 {len(raw)}')
+    # ---- 补遗（一期）解析 ----
+    supp2 = parse_supp_md(SUPP2_MD, 23, SPLITS, META, CATS_BY_CHAPTER, 124, 'supplement2')
+    # ---- 补遗二期解析 ----
+    supp3 = parse_supp_md(SUPP3_MD, 13, SPLITS3, META3, CATS3_BY_CHAPTER, 147, 'supplement3')
 
-    supp2 = []
-    for n, (title, body, sents) in enumerate(raw, 1):
-        sp = SPLITS[n]
-        used = sorted(sp['c'] + sp['u'] + sp['n'])
-        if used != list(range(len(sents))):
-            fail(f'补遗第 {n} 条《{title}》句归属不完整：used={used} total={len(sents)}')
-        join = lambda idxs: ''.join(sents[i] for i in idxs)
-        cat = next(c for lo, hi, c in CATS_BY_CHAPTER if lo <= n <= hi)
-        kw, kp = META[n - 1]
-        e = {
-            'id': f'KB-{124 + n:03d}',
-            'term': title,
-            'cat': cat,
-            'concept': join(sp['c']),
-            'usage': join(sp['u']),
-            'notes': join(sp['n']),
-            'supp': [],
-            'kw': kw,
-            'kp': kp,
-            'batch': 'supplement2',
-        }
-        # 逐字校验：三段拼接（按概念/使用/注意的归属重组后）字符多重集与原文一致
-        from collections import Counter
-        if Counter(e['concept'] + e['usage'] + e['notes']) != Counter(body):
-            fail(f'补遗第 {n} 条《{title}》三段与原文字符不一致')
-        supp2.append(e)
-
-    all_entries = entries + supp2
+    all_entries = entries + supp2 + supp3
 
     # ---- 全量校验 ----
     ids = [e['id'] for e in all_entries]
-    if len(all_entries) != 147 or len(set(ids)) != 147:
+    if len(all_entries) != 160 or len(set(ids)) != 160:
         fail(f'总数/id 唯一性异常：{len(all_entries)} / {len(set(ids))}')
-    for e in all_entries:
+    for pos, e in enumerate(all_entries, 1):
+        if e['id'] != f'KB-{pos:03d}':
+            fail(f'id 不连续：位置 {pos} 为 {e["id"]}')
         for sec in ('concept', 'usage', 'notes'):
             if not e[sec] or len(e[sec]) < 10:
                 fail(f'{e["id"]} {sec} 段为空或过短')
@@ -154,10 +187,11 @@ def main():
 
     payload = json.dumps(all_entries, ensure_ascii=False)
     OUT.write_text(
-        '/* glossary.js — 知识搜索词条数据（共 147 条）\n'
+        '/* glossary.js — 知识搜索词条数据（共 160 条）\n'
         ' * 由 ai-pm-coach-app/数据生成脚本-知识搜索-glossary.py 生成，勿手改。\n'
         ' * 来源：知识库 104 条 + 补强篇 20 条（原文三段式拆分，缺段补写以 supp 字段标注）\n'
-        ' *       + supplement2 补遗 23 条（batch:"supplement2"，逐句切分、文本逐字来自原文）。 */\n'
+        ' *       + supplement2 补遗 23 条（batch:"supplement2"，逐句切分、文本逐字来自原文）\n'
+        ' *       + supplement3 补遗二期 13 条（batch:"supplement3"，框架工具层 6 + 基础根条目 7，同口径）。 */\n'
         'var GLOSSARY_BANK=' + payload + ';\n',
         encoding='utf-8')
 
@@ -165,6 +199,7 @@ def main():
     print('OK 写出', OUT)
     print('总数', len(all_entries), '分类', dict(Counter(e['cat'] for e in all_entries)))
     print('补遗', len(supp2), '（batch=supplement2, KB-125..KB-147）')
+    print('补遗二期', len(supp3), '（batch=supplement3, KB-148..KB-160）')
     print('supp 非空', sum(1 for e in all_entries if e['supp']), '条；kp 非空', sum(1 for e in all_entries if e['kp'] is not None), '条')
     print('重名词条（保留为独立条目）:', dup if dup else '无')
 

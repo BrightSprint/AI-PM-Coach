@@ -32,6 +32,10 @@ export interface QuizCfg {
   dims: string[];
   startDiff: 'adaptive' | 'basic' | 'advanced';
   scope: 'unseen' | 'wrongfirst' | 'all';
+  /* 批次 6：「只学最弱维」待生效状态（无测评记录时预选、首次完整测评后自动生效）。
+     旧数据无此二字段，规整时默认 false / null，向后兼容。 */
+  weakestPending?: boolean;
+  weakestNotice?: { dim: string; score: number | null } | null;
 }
 
 /** 知识点下标按维度（= 阶段）分组，与 diagnosis 的 POINTS_BY_DIM 一致 */
@@ -109,6 +113,12 @@ export function normalizeQuizCfg(raw: unknown, dimNames: string[]): QuizCfg {
   }
   if (r.startDiff && START_DIFF_MAP[r.startDiff] != null) cfg.startDiff = r.startDiff;
   if (r.scope && SCOPES.includes(r.scope)) cfg.scope = r.scope;
+  /* 批次 6 字段：类型不合法一律回落默认，不因坏字段丢弃其余设置 */
+  cfg.weakestPending = r.weakestPending === true;
+  cfg.weakestNotice =
+    r.weakestNotice && typeof r.weakestNotice === 'object' && typeof r.weakestNotice.dim === 'string'
+      ? { dim: r.weakestNotice.dim, score: typeof r.weakestNotice.score === 'number' ? r.weakestNotice.score : null }
+      : null;
   return cfg;
 }
 

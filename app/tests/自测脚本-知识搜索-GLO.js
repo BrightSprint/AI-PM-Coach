@@ -22,14 +22,14 @@ function check(id, name, cond, extra) {
   if (cond) pass++; else fail++;
 }
 
-/* GLO-01 数据完整性（总数含补遗 = 147） */
+/* GLO-01 数据完整性（总数含补遗 = 160）【补遗二期口径：147 → 160】 */
 {
   const ids = new Set(BANK.map(e => e.id));
   const cats = {};
   BANK.forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + 1; });
-  check('GLO-01', '词条总数 = 147（124 + 补遗 23）', BANK.length === 147, '实际 ' + BANK.length);
-  check('GLO-01', 'id 全唯一且 KB-001..KB-147 连续', ids.size === 147 && BANK.every((e, i) => e.id === 'KB-' + String(i + 1).padStart(3, '0')));
-  check('GLO-01', '分类计数 技术术语60/应用工具27/产品名词40/补强20', cats['技术术语'] === 60 && cats['应用工具'] === 27 && cats['产品名词'] === 40 && cats['补强'] === 20, JSON.stringify(cats));
+  check('GLO-01', '词条总数 = 160（124 + 补遗 23 + 补遗二期 13）', BANK.length === 160, '实际 ' + BANK.length);
+  check('GLO-01', 'id 全唯一且 KB-001..KB-160 连续', ids.size === 160 && BANK.every((e, i) => e.id === 'KB-' + String(i + 1).padStart(3, '0')));
+  check('GLO-01', '分类计数 技术术语67/应用工具33/产品名词40/补强20', cats['技术术语'] === 67 && cats['应用工具'] === 33 && cats['产品名词'] === 40 && cats['补强'] === 20, JSON.stringify(cats));
   check('GLO-01', '每条三段非空、kw 1–8 个、kp 为空或 0–26、supp 只含合法段名',
     BANK.every(e => e.concept.length >= 10 && e.usage.length >= 10 && e.notes.length >= 10 &&
       e.kw.length >= 1 && e.kw.length <= 8 &&
@@ -37,6 +37,8 @@ function check(id, name, cond, extra) {
       (e.supp || []).every(s => ['concept', 'usage', 'notes'].includes(s))));
   const s2 = BANK.filter(e => e.batch === 'supplement2');
   check('GLO-01', '补遗 23 条均带 batch=supplement2 且 supp 为空', s2.length === 23 && s2.every(e => (e.supp || []).length === 0), 's2=' + s2.length);
+  const s3 = BANK.filter(e => e.batch === 'supplement3');
+  check('GLO-01', '补遗二期 13 条均带 batch=supplement3 且 supp 为空', s3.length === 13 && s3.every(e => (e.supp || []).length === 0), 's3=' + s3.length);
 }
 
 /* GLO-02 标题精确优先 */
@@ -67,7 +69,7 @@ function check(id, name, cond, extra) {
   const supp = GL.searchGlossary(BANK, '', '补强');
   const tech = GL.searchGlossary(BANK, '', '技术术语');
   const all = GL.searchGlossary(BANK, '', '全部');
-  check('GLO-04', '空查询+分类：补强 20 / 技术术语 60 / 全部 147', supp.length === 20 && supp.every(e => e.cat === '补强') && tech.length === 60 && all.length === 147,
+  check('GLO-04', '空查询+分类：补强 20 / 技术术语 67 / 全部 160', supp.length === 20 && supp.every(e => e.cat === '补强') && tech.length === 67 && all.length === 160,
     `supp=${supp.length} tech=${tech.length} all=${all.length}`);
   const inCat = GL.searchGlossary(BANK, '模型', '应用工具');
   check('GLO-04', '分类内搜索只出该分类', inCat.every(e => e.cat === '应用工具'), 'n=' + inCat.length);
@@ -101,6 +103,39 @@ function check(id, name, cond, extra) {
   check('GLO-07', '摘要为概念首句且不超长+省略号', s.length <= 65 && BANK[0].concept.startsWith(s.replace(/…$/, '')), s.slice(0, 40));
 }
 
+/* GLO-10 补遗二期 13 条逐条可搜（标题精确 + 关键词两条路径） */
+{
+  const S3 = [
+    ['KB-148', 'LangGraph', '检查点', '应用工具'],
+    ['KB-149', 'LangChain', '链式调用', '应用工具'],
+    ['KB-150', 'Dify', '低代码', '应用工具'],
+    ['KB-151', 'LlamaIndex', '数据接入', '应用工具'],
+    ['KB-152', 'CrewAI', '角色分工', '应用工具'],
+    ['KB-153', 'vLLM', '推理引擎', '应用工具'],
+    ['KB-154', 'ReAct', 'Agent 范式', '技术术语'],
+    ['KB-155', '规划与反思', '自我反思', '技术术语'],
+    ['KB-156', '机器学习', '监督学习', '技术术语'],
+    ['KB-157', 'SFT', '指令微调', '技术术语'],
+    ['KB-158', 'Top-p', '采样参数', '技术术语'],
+    ['KB-159', 'Benchmark', '公开榜单', '技术术语'],
+    ['KB-160', '链路追踪', 'LangSmith', '技术术语'],
+  ];
+  let titleOk = 0, kwOk = 0, shapeOk = 0;
+  const bad = [];
+  S3.forEach(([id, tp, kp2, cat]) => {
+    const e = BANK.find(x => x.id === id);
+    if (!e) { bad.push(id + ':missing'); return; }
+    if (e.cat === cat && e.batch === 'supplement3' && e.concept.length >= 10 && e.usage.length >= 10 && e.notes.length >= 10) shapeOk++; else bad.push(id + ':shape');
+    const r1 = GL.searchGlossary(BANK, tp, '全部');
+    if (r1.length && r1[0].id === id) titleOk++; else bad.push(id + ':title=' + (r1[0] && r1[0].id));
+    const r2 = GL.searchGlossary(BANK, kp2, '全部');
+    if (r2.some(x => x.id === id)) kwOk++; else bad.push(id + ':kw');
+  });
+  check('GLO-10', '补遗二期 13 条：标题探针首条命中 13/13', titleOk === 13, 'titleOk=' + titleOk + ' ' + bad.join(','));
+  check('GLO-10', '补遗二期 13 条：关键词探针可搜到 13/13', kwOk === 13, 'kwOk=' + kwOk);
+  check('GLO-10', '补遗二期 13 条：分类/批次/三段形状正确 13/13', shapeOk === 13, 'shapeOk=' + shapeOk);
+}
+
 /* ============ 浏览器 UI 流程（GLO-08 / GLO-09） ============ */
 const { chromium } = require('/opt/muse/assets/spaces/ts-runtime/dist/node_modules/playwright-core');
 const BASE = 'file:///home/hatch/workspace/ts-spaces/ai-pm-coach/index.html';
@@ -128,7 +163,7 @@ const TWELVE_KEYS = ['aipm.attempts.v1', 'aipm.snapshots.v1', 'aipm.inprogress.v
   const inGlo = (await activeView()) === 'view-glossary';
   const totalShown = await page.evaluate(() => document.querySelectorAll('#glo-results .glo-item').length);
   const countTxt = await page.evaluate(() => document.getElementById('glo-count').textContent);
-  check('GLO-08', '学习页入口可达知识搜索，默认列出全部 147 条', inGlo && totalShown === 147 && countTxt.includes('147'), 'shown=' + totalShown + ' ' + countTxt.slice(0, 40));
+  check('GLO-08', '学习页入口可达知识搜索，默认列出全部 160 条', inGlo && totalShown === 160 && countTxt.includes('160'), 'shown=' + totalShown + ' ' + countTxt.slice(0, 40));
   /* 检索精确词条并打开详情 */
   await page.fill('#glo-input', '向量数据库');
   await page.waitForTimeout(250);

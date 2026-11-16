@@ -527,6 +527,7 @@
   .plan-panel h3{margin:0;font-size:16px;font-weight:700;color:var(--text-strong)}
   .plan-summary{margin:6px 0 0;font-size:14px;line-height:1.7;color:var(--muted)}
   .plan-summary b{color:var(--text-strong)}
+  .plan-notice{margin:10px 0 0;background:var(--primary-soft);border:1px solid var(--primary-soft-border);border-radius:8px;padding:10px 13px;font-size:13.5px;line-height:1.65;color:var(--text)}
   .plan-presets{margin-top:13px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
   .preset-btn{background:#fff;color:var(--muted);border:1px solid var(--border);font-size:13.5px;font-weight:600;padding:0 15px;height:40px;border-radius:8px}
   .preset-btn:hover{background:#F1EFEA;color:var(--text)}
@@ -575,6 +576,8 @@
   .plan-quiz-card .btn-primary{height:46px;font-size:15px;min-width:170px;padding:0 20px}
   .radar-subset-note{display:none;margin:0 0 18px;background:#F7F5F1;border:1px solid var(--border-soft);border-radius:8px;padding:12px 15px;font-size:14px;line-height:1.7;color:#5C5952}
   .radar-subset-note.show{display:block}
+  .weakest-note{display:none;margin:0 0 18px;background:var(--primary-soft);border:1px solid var(--primary-soft-border);border-radius:8px;padding:12px 15px;font-size:14px;line-height:1.7;color:var(--text)}
+  .weakest-note.show{display:block}
 
   /* ---------- Batch 3: 错题本 / 阶段小测 / 复习队列 ---------- */
   .wb-entry-btn{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin:0 0 22px}
@@ -944,6 +947,7 @@
 
   <main class="result-wrap">
     <div id="retest-feedback"></div>
+    <p class="weakest-note" id="weakest-note"></p>
     <p class="radar-subset-note" id="radar-subset-note"></p>
     <div class="wrong-wrap" id="wrong-wrap"></div>
     <div class="score-head">
@@ -1486,11 +1490,17 @@
     <div class="check-group"><h3>七、批次 2 结构化自测用例（学习计划 PLN / 测评设置 SET / 自动匹配 MAT / 练习排序 PRC）</h3>
       <p class="section-desc">本组为批次 2「当前目标」四项的结构化用例，字段与批次 1 同一体系。标注「已执行」的条目已在本批用 Node 加载真实引擎与题库脚本实际运行并通过（脚本存档于设计文件《自测脚本-批次 2》）；标注「UI 流程」的条目留待打包后全量回归时在界面上逐条执行。</p>
       <div class="check-item" data-testid="PLN-01" data-module="学习计划"><b>PLN-01 · 计划保存后重读一致【已执行】</b><p>模块：学习计划。前置：构造 custom 计划 {pointIds:[0,1,19,9,23], pinnedFirst:[23]}。步骤：写入 aipm.learn.v1 的 plan 字段 → 读回 → 两次 normalizePlan。预期：两次规整结果逐字一致，dims 由知识点推导为 [AI 基础认知， 数据与评估]，原 learned/practice/lastPoint 字段不被破坏。断言：<code>normalize(reread) deepEqual normalize(normalize(reread)) &amp;&amp; dims == ['AI 基础认知','数据与评估']</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="PLN-02" data-module="学习计划"><b>PLN-02 · 只学最弱维预设【已执行】</b><p>模块：学习计划。前置：最近成绩 [72,41,66,58,63,70]。步骤：调用 planFromWeakest。预期：取的维度 == 最近成绩最弱维（场景洞察 41 分），计划知识点恰为该维全部 4 点 [3,4,5,20]；无成绩时返回 null（界面上该预设禁用并提示先测评）。断言：<code>plan.dims == ['场景洞察'] &amp;&amp; plan.pointIds == [3,4,5,20] &amp;&amp; planFromWeakest(null) == null</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="PLN-03" data-module="学习计划"><b>PLN-03 · 无计划默认全学【已执行】</b><p>模块：学习计划。前置：本地无 plan 字段。步骤：normalizePlan(null)。预期：mode=all、27 个知识点全入计划、六维全选 — 与批次 2 之前的路径呈现与计数完全一致。断言：<code>plan.mode == 'all' &amp;&amp; plan.pointIds.length == 27 &amp;&amp; plan.dims.length == 6</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-02" data-module="学习计划"><b>PLN-02 · 只学最弱维预设【已执行】</b><p>模块：学习计划。前置：最近成绩 [72,41,66,58,63,70]。步骤：调用 planFromWeakest。预期：取的维度 == 最近成绩最弱维（场景洞察 41 分），计划知识点恰为该维全部 4 点 [3,4,5,20]；无成绩时返回 null（批次 6 起界面不再禁用该预设，改为可点选的「待生效」，见 PLN-09）。断言：<code>plan.dims == ['场景洞察'] &amp;&amp; plan.pointIds == [3,4,5,20] &amp;&amp; planFromWeakest(null) == null</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-03" data-module="学习计划"><b>PLN-03 · 无计划默认全学【已执行】</b><p>模块：学习计划。前置：本地无 plan 字段。步骤：normalizePlan(null)。预期：mode=all、27 个知识点全入计划、六维全选 — 与批次 2 之前的路径呈现与计数完全一致（批次 6 只改面板呈现：未设置状态呈空态，见 PLN-07；本条引擎口径不变）。断言：<code>plan.mode == 'all' &amp;&amp; plan.pointIds.length == 27 &amp;&amp; plan.dims.length == 6</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="PLN-04" data-module="学习计划"><b>PLN-04 · 置顶顺序【已执行】</b><p>模块：学习计划。前置：plan.pointIds=[3,9,23,0]、pinnedFirst=[23,9]。步骤：orderedPlanPoints。预期：置顶的 23、9 按 pinnedFirst 顺序排在计划最前，其余按下标升序。断言：<code>ordered == [23,9,0,3]</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="PLN-05" data-module="学习计划"><b>PLN-05 · 计划外知识点弱化标记【UI 流程】</b><p>模块：学习计划。前置：保存一个只含 2 个维度的 custom 计划。步骤：打开学习路径，检查计划外知识点行与阶段卡计数。预期：计划外行带 is-out 弱化样式与「计划外」徽标且仍可点开；阶段卡已学计数分母为该阶段计划内知识点数；计划内知识点正常显示并排在计划外之前。</p></div>
       <div class="check-item" data-testid="PLN-06" data-module="学习计划"><b>PLN-06 · 推荐先学限定计划内【UI 流程】</b><p>模块：学习计划。前置：计划含置顶知识点且均未学。步骤：打开学习路径看「推荐先学」徽标。预期：徽标落在计划呈现顺序中第一个未学知识点（置顶优先）上，计划外知识点永不带此徽标。</p></div>
+      <div class="check-item" data-testid="PLN-07" data-module="学习计划"><b>PLN-07 · 首启空态呈现【UI 流程 · 已执行】</b><p>模块：学习计划（批次 6）。前置：全新本地存储（无任何记录）。步骤：打开学习页看计划面板与路径。预期：面板显示「尚未设置学习目标」引导文案，不出现「计划知识点 N 个 / 计划内已学 x/y」式计数摘要；三个预设按钮均可点且无一被预亮；路径照常展示全部 27 个知识点。断言：<code>panel 含「尚未设置学习目标」 &amp;&amp; panel 不含「计划内已学」 &amp;&amp; .preset-btn.is-on 数量 == 0 &amp;&amp; pointRows == 27</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-08" data-module="学习计划"><b>PLN-08 · 无计划下完整测评可走完【UI 流程 · 已执行】</b><p>模块：学习计划（批次 6）。前置：全新存储、不设任何计划。步骤：介绍页用默认设置开始测评，答完 18 题到结果页，再回学习页看计划面板。预期：全程无报错、结果页正常出分；测评不自动生成计划，面板仍呈空态。断言：<code>attempts.length == 1 &amp;&amp; learn.plan == null &amp;&amp; panel 含「尚未设置学习目标」 &amp;&amp; pageErrors == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-09" data-module="学习计划"><b>PLN-09 · 最弱维预设待生效全链路【UI 流程 · 已执行】</b><p>模块：学习计划（批次 6）。前置：全新存储。步骤：在学习页点「只学最弱维」→ 完成首次完整测评（18 题）→ 看结果页 → 回学习页。预期：点选后按钮呈「只学最弱维 · 待生效」、卡上明示「完成首次测评后自动按最弱维聚焦」，quizcfg.weakestPending 落盘为 true 且计划仍未生成；测评完成后自动按本次最弱维生成 weakest 计划、待生效标记清除；结果页出现一次「已生效」提示（weakestNotice 展示后清空，再进学习页不重复出现）。断言：<code>pending: false→true→false &amp;&amp; plan.mode == 'weakest' &amp;&amp; plan.dims == [本次最弱维] &amp;&amp; 结果页含「已生效」 &amp;&amp; notice 已清空</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-10" data-module="学习计划"><b>PLN-10 · 有记录时最弱维预设原行为【UI 流程 · 已执行】</b><p>模块：学习计划（批次 6）。前置：已有完整测评记录（最弱维为数据与评估 45 分）。步骤：在学习页点「只学最弱维」。预期：立即生成该最弱维的 weakest 计划（与 PLN-02 / LN-04 一致），不产生待生效标记。断言：<code>plan.mode == 'weakest' &amp;&amp; plan.pointIds == [9,10,11,23,24] &amp;&amp; quizcfg.weakestPending != true</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-11" data-module="学习计划"><b>PLN-11 · 待生效字段旧数据兼容【已执行】</b><p>模块：学习计划（批次 6）。前置：构造旧版 quizcfg（无 weakestPending / weakestNotice 字段）、带待生效字段的 quizcfg、带坏字段的 quizcfg。步骤：normalizeQuizCfg 规整并 JSON 往返。预期：旧数据规整后 weakestPending == false、weakestNotice == null 且 count/dims/startDiff/scope 保持原值；待生效字段往返不丢失；坏字段回落默认、不影响其余字段。断言：<code>normalize(legacy).weakestPending == false &amp;&amp; roundtrip(pending) 保持 &amp;&amp; normalize(corrupt).count == 18</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="PLN-12" data-module="学习计划"><b>PLN-12 · 待生效的取消与改选【UI 流程 · 已执行】</b><p>模块：学习计划（批次 6）。前置：全新存储并已点选待生效。步骤：再点一次「只学最弱维 · 待生效」；重新点选待生效后改点「系统全学」。预期：再点一次即取消待生效（标记清除、按钮文案恢复）；改选系统全学后待生效清除并生成 all 计划。断言：<code>weakestPending 依次 true→false→true→false &amp;&amp; 最终 plan.mode == 'all'</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="SET-01" data-module="测评设置"><b>SET-01 · 子集维度只出所选维度【已执行】</b><p>模块：测评设置。前置：quizcfg.dims=[AI 基础认知， 产品设计， 技术协作]、count=12。步骤：以该配置新开 CAT 会话跑完一轮。预期：12 道题全部属于所选三维且每维恰 4 题，无其他维度题目。断言：<code>decisions.length == 12 &amp;&amp; decisions.every(d =&gt; dims.includes(d.dimension)) &amp;&amp; 每维 == 4</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="SET-02" data-module="测评设置"><b>SET-02 · count=12 总题数【已执行】</b><p>模块：测评设置。前置：六维全选、count=12、每维上限 2。步骤：跑完一轮。预期：总题数恰为 12，会话正常终止。断言：<code>decisions.length == 12 &amp;&amp; session.stepCount == 12 &amp;&amp; session.isFinished()</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="SET-03" data-module="测评设置"><b>SET-03 · 难度起点映射【已执行】</b><p>模块：测评设置。前置：startDiff=basic。步骤：新开会话读各维初始状态与第一题目标难度。预期：各维初始难度均为 2；映射表 adaptive=3、advanced=4。断言：<code>state.every(d =&gt; d.currentDifficulty == 2) &amp;&amp; firstDecision.targetDifficulty == 2 &amp;&amp; startDifficulty({startDiff:'advanced'}) == 4</code>（实测通过）。</p></div>
@@ -1543,15 +1553,16 @@
     </div>
 
     <div class="check-group"><h3>十、知识搜索结构化自测用例（GLO）</h3>
-      <div class="check-item" data-testid="GLO-01" data-module="知识搜索"><b>GLO-01 · 词条数据完整性【已执行】</b><p>模块：知识搜索。前置：Node 加载 assets/glossary.js。步骤：统计总数、id 连续性、分类计数、逐条校验三段非空与字段合法性、补遗标记。预期：总数 147（知识库 104 + 补强 20 + supplement2 补遗 23）；分类 技术术语 60 / 应用工具 27 / 产品名词 40 / 补强 20；补遗 23 条均带 batch=supplement2 且 supp 为空。断言：<code>BANK.length == 147 &amp;&amp; ids == KB-001..KB-147 &amp;&amp; cats == {60,27,40,20} &amp;&amp; s2.length == 23</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-01" data-module="知识搜索"><b>GLO-01 · 词条数据完整性【已执行】</b><p>模块：知识搜索。前置：Node 加载 assets/glossary.js。步骤：统计总数、id 连续性、分类计数、逐条校验三段非空与字段合法性、补遗标记。预期：总数 160（知识库 104 + 补强 20 + supplement2 补遗 23 + supplement3 补遗二期 13）；分类 技术术语 67 / 应用工具 33 / 产品名词 40 / 补强 20；补遗 23 条均带 batch=supplement2、补遗二期 13 条均带 batch=supplement3，且 supp 均为空。断言：<code>BANK.length == 160 &amp;&amp; ids == KB-001..KB-160 &amp;&amp; cats == {67,33,40,20} &amp;&amp; s2.length == 23 &amp;&amp; s3.length == 13</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-02" data-module="知识搜索"><b>GLO-02 · 标题精确优先【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：分别搜「向量数据库」、某词条全名、英文「Transformer」。预期：首条依次为向量数据库词条、该词条本身、补遗 Transformer 条目。断言：<code>search('向量数据库')[0].term 含向量数据库 &amp;&amp; search(term)[0].id == 该条 id &amp;&amp; search('Transformer')[0].batch == 'supplement2'</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-03" data-module="知识搜索"><b>GLO-03 · 排序口径【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：搜「模型」，用引擎 _scoreTerm 复算每条得分并检查标题命中与纯正文命中的相对位置。预期：得分序列非递增；标题含「模型」的条目全部排在纯正文命中之前。断言：<code>scores 单调非增 &amp;&amp; max(titleIdx) &lt; min(bodyOnlyIdx)</code>（实测通过，命中 87 条）。</p></div>
-      <div class="check-item" data-testid="GLO-04" data-module="知识搜索"><b>GLO-04 · 分类筛选【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：空查询分别按补强/技术术语/全部分类检索；再在应用工具分类内搜「模型」。预期：计数依次 20/60/147；分类内结果只含该分类。断言：<code>supp.length == 20 &amp;&amp; tech.length == 60 &amp;&amp; all.length == 147 &amp;&amp; inCat.every(cat == '应用工具')</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-04" data-module="知识搜索"><b>GLO-04 · 分类筛选【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：空查询分别按补强/技术术语/全部分类检索；再在应用工具分类内搜「模型」。预期：计数依次 20/67/160；分类内结果只含该分类。断言：<code>supp.length == 20 &amp;&amp; tech.length == 67 &amp;&amp; all.length == 160 &amp;&amp; inCat.every(cat == '应用工具')</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-05" data-module="知识搜索"><b>GLO-05 · 正文命中与无结果【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：取 KB-031 注意事项首 4 字作查询；再搜无意义字符串。预期：前者结果含 KB-031；后者为空数组。断言：<code>search(probe).some(id == 'KB-031') &amp;&amp; search('zzzz不存在的词xyz').length == 0</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-06" data-module="知识搜索"><b>GLO-06 · 相关知识点匹配【已执行】</b><p>模块：知识搜索。前置：GlossaryLink.relatedPoints 与 27 个知识点标题。步骤：对自带 kp 的条目、对无 kp 的合成条目（词条名/关键词与某知识点标题重合）、对完全无关的合成条目分别求相关知识点。预期：依次为 [kp]、[该知识点下标]、空数组（链不上不硬凑）。断言：<code>relatedPoints(withKp) == [kp] &amp;&amp; relatedPoints(fake)[0] == 0 &amp;&amp; relatedPoints(orphan).length == 0</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-07" data-module="知识搜索"><b>GLO-07 · 列表摘要【已执行】</b><p>模块：知识搜索。前置：同 GLO-01。步骤：对首条词条取 summaryOf。预期：摘要等于概念段首句（至第一个句号），超长时截断加省略号。断言：<code>summary.length &lt;= 65 &amp;&amp; concept.startsWith(summary 去省略号)</code>（实测通过）。</p></div>
-      <div class="check-item" data-testid="GLO-08" data-module="知识搜索"><b>GLO-08 · 搜索界面流程【UI 流程 · 已执行】</b><p>模块：知识搜索。前置：无头 Chromium 打开应用。步骤：学习页点「打开知识搜索」→ 看默认列表 → 搜「向量数据库」打开详情 → 点「相关知识点」按钮 → 返回后打开一条 supp 非空词条 → 切分类到「补强」。预期：默认恰列 147 条；详情三段齐全（概念介绍/使用方案/注意事项）；相关知识点按钮跳到对应知识点学习页；补写段下方注记数与该条 supp 段数一致；补强分类恰 20 条且全为补强。断言：<code>shown == 147 &amp;&amp; heads 含三段 &amp;&amp; jump 后 view == view-learn-detail &amp;&amp; suppNotes == supp.length &amp;&amp; catShown == 20</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-08" data-module="知识搜索"><b>GLO-08 · 搜索界面流程【UI 流程 · 已执行】</b><p>模块：知识搜索。前置：无头 Chromium 打开应用。步骤：学习页点「打开知识搜索」→ 看默认列表 → 搜「向量数据库」打开详情 → 点「相关知识点」按钮 → 返回后打开一条 supp 非空词条 → 切分类到「补强」。预期：默认恰列 160 条；详情三段齐全（概念介绍/使用方案/注意事项）；相关知识点按钮跳到对应知识点学习页；补写段下方注记数与该条 supp 段数一致；补强分类恰 20 条且全为补强。断言：<code>shown == 160 &amp;&amp; heads 含三段 &amp;&amp; jump 后 view == view-learn-detail &amp;&amp; suppNotes == supp.length &amp;&amp; catShown == 20</code>（实测通过）。</p></div>
       <div class="check-item" data-testid="GLO-09" data-module="知识搜索"><b>GLO-09 · 零存储零网络【已执行】</b><p>模块：知识搜索。前置：同 GLO-08，开启请求与存储监控（快照取在相关知识点跳转之前，跳转写 learn 键属学习功能自身持久化）。步骤：完成检索/筛选/详情浏览全流程后对比十键集合。预期：知识搜索本身不新增任何 localStorage key、不发外部请求、无 pageerror。断言：<code>tenKeysBefore deepEqual tenKeysAfter &amp;&amp; external.length == 0 &amp;&amp; pageErrors.length == 0</code>（实测通过）。</p></div>
+      <div class="check-item" data-testid="GLO-10" data-module="知识搜索"><b>GLO-10 · 补遗二期 13 条逐条可搜【已执行】</b><p>模块：知识搜索（补遗二期）。前置：同 GLO-01，词条含 supplement3 的 KB-148..KB-160（应用工具 6：LangGraph/LangChain/Dify/LlamaIndex/多智能体框架/推理部署工具；技术术语 7：ReAct/规划与反思/机器学习总览/SFT/温度与采样参数/Benchmark/可观测性与链路追踪）。步骤：逐条以标题词（如「LangGraph」「Dify」「ReAct」「Benchmark」）检索，再逐条以一个关键词（如「状态图」「低代码」「自我反思」「LangSmith」）检索。预期：标题检索首条即该词条；关键词检索结果含该词条；13 条三段齐全、分类与 id 顺延正确。断言：<code>13 条 titleProbe 首条命中 &amp;&amp; 13 条 kwProbe 结果含本条 &amp;&amp; KB-148..160 分类 == [应用工具×6, 技术术语×7]</code>（实测通过）。</p></div>
     </div>
 
     <div class="check-group"><h3>十一、异常测试用例（ABN：断网 / 突然关闭 / 断电强杀 / 存储损坏）</h3>
@@ -1693,6 +1704,40 @@
     }
     var quizCfg = loadQuizCfg();
     var quizTotal = quizCfg.count;
+    /* ---------- 批次 6：「只学最弱维」待生效（无成绩时可预选，首次完整测评后自动生效） ----------
+       状态存既有键 aipm.quizcfg.v1 的 weakestPending / weakestNotice 字段，不新增键；
+       normalizeQuizCfg 已做向后兼容（旧数据缺字段时默认 false / null）。 */
+    function isWeakestPending(){ return loadQuizCfg().weakestPending === true; }
+    function setWeakestPending(on){
+      var c = loadQuizCfg();
+      c.weakestPending = !!on;
+      if(!on){ c.weakestNotice = null; }
+      saveQuizCfg(c);
+    }
+    /* 待生效且已有完整六维成绩时：按最弱维规则生成计划并落盘，返回是否刚激活。
+       激活信息写入 weakestNotice，由结果页或学习计划面板先到者展示一次后清空。 */
+    function maybeActivateWeakest(){
+      var c = loadQuizCfg();
+      if(!c.weakestPending || !lastDimScores){ return false; }
+      var p = GoalLink.planFromWeakest(lastDimScores, DIM_NAMES, pointStages());
+      if(!p){ return false; }
+      setPlan(p);
+      c.weakestPending = false;
+      c.weakestNotice = { dim: p.dims[0], score: lastDimScores[p.weakestIndex] };
+      saveQuizCfg(c);
+      return true;
+    }
+    function takeWeakestNotice(){
+      var c = loadQuizCfg();
+      if(!c.weakestNotice){ return null; }
+      var n = c.weakestNotice;
+      c.weakestNotice = null;
+      saveQuizCfg(c);
+      return n;
+    }
+    function weakestNoticeText(n){
+      return '你预选的「只学最弱维」已生效：已按最近一次完整测评的最弱维「' + n.dim + (typeof n.score === 'number' ? '（' + n.score + ' 分）' : '') + '」生成学习计划。';
+    }
     function historyWrongIds(){
       var ids = {};
       loadAttempts().forEach(function(a){
@@ -2030,7 +2075,18 @@
       /* 复测对比反馈只属于能生成快照的完整测评；子集测评不展示对比卡 */
       renderRetestFeedback(snapEligible ? prevSnapshot : null, displayScores.map(function(s){ return s == null ? 0 : s; }), totalScore);
       if(isFull){ updateLearnRec(displayScores); lastDimScores = displayScores.slice(); }
+      /* 批次 6：预选「只学最弱维」待生效 → 本次完整测评产生六维成绩后自动生效，结果页提示一次 */
+      if(isFull){ maybeActivateWeakest(); }
+      renderWeakestNote();
       show('view-result');
+    }
+    function renderWeakestNote(){
+      var el = document.getElementById('weakest-note');
+      if(!el){ return; }
+      var n = takeWeakestNotice();
+      if(!n){ el.classList.remove('show'); el.textContent = ''; return; }
+      el.textContent = weakestNoticeText(n) + '去学习页就能按这个计划学。';
+      el.classList.add('show');
     }
     function renderResult(scores, totalScore, rightAll, totalAll, timeAll, saved, testedDims){
       /* scores 与六维同序，未测维度为 null；testedDims 缺省视为六维全测（与旧行为一致） */
@@ -2424,6 +2480,11 @@
     }
     /* ---------- 学习计划（当前目标）：存入 learn.v1 的 plan 字段，不新建键 ---------- */
     function pointStages(){ return POINTS.map(function(p){ return p.s; }); }
+    /* 批次 6：区分「用户从未设置计划」（learnState.plan 为 null → 面板呈现空态）
+       与「已保存计划」（含显式点选的系统全学）。引擎口径不变：未设置时 getPlan()
+       仍返回默认全学计划供路径呈现与出题使用（PLN-03），只是不再把默认计划
+       呈现成用户已配置好的计划。 */
+    function hasUserPlan(){ return !!(learnState.plan && typeof learnState.plan === 'object'); }
     function getPlan(){
       return GoalLink.normalizePlan(learnState.plan, DIM_NAMES, pointStages());
     }
@@ -2553,36 +2614,60 @@
     function renderPlanPanel(){
       var slot = document.getElementById('plan-panel-slot');
       if(!slot){ return; }
+      /* 批次 6：渲染前先尝试激活待生效预选（覆盖数据导入后先进学习页等路径；
+         刚激活时下方会有一条一次性生效提示） */
+      maybeActivateWeakest();
       var plan = getPlan();
+      var userPlan = hasUserPlan();
+      var pending = isWeakestPending();
       var inPlan = planPointSet();
       var planLearned = plan.pointIds.filter(function(i){ return learned[i]; }).length;
       slot.innerHTML = '';
       var panel = document.createElement('div'); panel.className = 'plan-panel'; panel.setAttribute('aria-label', '我的学习计划');
       var h = document.createElement('h3'); h.textContent = '我的学习计划 · 当前目标'; panel.appendChild(h);
+      var actN = takeWeakestNotice();
+      if(actN){
+        var act = document.createElement('p'); act.className = 'plan-notice';
+        act.textContent = weakestNoticeText(actN);
+        panel.appendChild(act);
+      }
       var sum = document.createElement('p'); sum.className = 'plan-summary';
-      sum.innerHTML = '当前模式：<b>' + planModeLabel(plan) + '</b> · 聚焦维度：<b>' + (plan.dims.length ? plan.dims.join('、') : '无') + '</b> · 计划知识点 <b>' + plan.pointIds.length + '</b> 个 · 计划内已学 <b>' + planLearned + '/' + plan.pointIds.length + '</b>' +
-        (plan.pinnedFirst.length ? ' · 已置顶 <b>' + plan.pinnedFirst.length + '</b> 个' : '') +
-        '。计划和测评共用这个目标：在介绍页可以「按计划出题」，测评后错题对应的知识点会建议你加回计划。';
+      if(!userPlan && !pending){
+        /* 批次 6 空态：从未设置过计划时不呈现默认全学计划的计数，改为引导文案 */
+        sum.innerHTML = '<b>尚未设置学习目标。</b>选一个预设，或用「自定义计划」勾选知识点，生成你的学习计划：计划和测评共用这个目标——在介绍页可以「按计划出题」，测评后错题对应的知识点会建议你加回计划。不设置也能直接学，下面的路径默认展示全部 27 个知识点。';
+      } else if(!userPlan && pending){
+        sum.innerHTML = '<b>已选「只学最弱维」· 待生效。</b>完成首次测评后，将自动按最弱维生成你的学习计划。在此之前，下面的路径默认展示全部 27 个知识点。';
+      } else {
+        sum.innerHTML = '当前模式：<b>' + planModeLabel(plan) + '</b> · 聚焦维度：<b>' + (plan.dims.length ? plan.dims.join('、') : '无') + '</b> · 计划知识点 <b>' + plan.pointIds.length + '</b> 个 · 计划内已学 <b>' + planLearned + '/' + plan.pointIds.length + '</b>' +
+          (plan.pinnedFirst.length ? ' · 已置顶 <b>' + plan.pinnedFirst.length + '</b> 个' : '') +
+          '。计划和测评共用这个目标：在介绍页可以「按计划出题」，测评后错题对应的知识点会建议你加回计划。';
+      }
       panel.appendChild(sum);
       var presets = document.createElement('div'); presets.className = 'plan-presets';
       function presetBtn(label, mode){
-        var b = document.createElement('button'); b.type = 'button'; b.className = 'preset-btn' + (plan.mode === mode ? ' is-on' : ''); b.textContent = label;
+        /* 批次 6：未设置计划时不预亮任何预设（默认全学只是引擎兜底，不是用户选择） */
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'preset-btn' + (userPlan && plan.mode === mode ? ' is-on' : ''); b.textContent = label;
         return b;
       }
       var bAll = presetBtn('系统全学 · 27 点全入计划', 'all');
-      bAll.addEventListener('click', function(){ planEditorOpen = false; setPlan({ mode: 'all' }); renderPlanPanel(); renderPath(); });
+      bAll.addEventListener('click', function(){ planEditorOpen = false; setWeakestPending(false); setPlan({ mode: 'all' }); renderPlanPanel(); renderPath(); });
       presets.appendChild(bAll);
       var wd = weakestDimIndex();
       var bWeak = presetBtn('只学最弱维', 'weakest');
-      if(wd < 0){
-        bWeak.disabled = true;
-        bWeak.title = '先完成一次测评，才能知道最弱维';
-      } else {
-        bWeak.addEventListener('click', function(){
+      if(pending){ bWeak.classList.add('is-on'); bWeak.textContent = '只学最弱维 · 待生效'; }
+      /* 批次 6：该预设任何时候可点选——有成绩立即生效；无成绩进入/退出待生效 */
+      bWeak.addEventListener('click', function(){
+        if(weakestDimIndex() >= 0){
           var p = GoalLink.planFromWeakest(lastDimScores, DIM_NAMES, pointStages());
-          if(p){ planEditorOpen = false; setPlan(p); renderPlanPanel(); renderPath(); }
-        });
-      }
+          if(p){ planEditorOpen = false; setWeakestPending(false); setPlan(p); renderPlanPanel(); renderPath(); }
+        } else if(isWeakestPending()){
+          setWeakestPending(false);
+          renderPlanPanel();
+        } else {
+          setWeakestPending(true);
+          renderPlanPanel();
+        }
+      });
       presets.appendChild(bWeak);
       var bCustom = presetBtn(planEditorOpen ? '收起自定义' : '自定义计划', 'custom');
       bCustom.addEventListener('click', function(){
@@ -2593,7 +2678,10 @@
       });
       presets.appendChild(bCustom);
       if(wd < 0){
-        var ph = document.createElement('span'); ph.className = 'plan-hint'; ph.textContent = '「只学最弱维」需要先完成一次测评 — 还没有成绩时，这个预设不可用。';
+        var ph = document.createElement('span'); ph.className = 'plan-hint';
+        ph.textContent = pending
+          ? '「只学最弱维」已选 · 待生效：完成首次测评后自动按最弱维聚焦；再点一次可取消，也可改选其他预设。'
+          : '「只学最弱维」可以先选上：完成首次测评后，会自动按最弱维为你聚焦。';
         presets.appendChild(ph);
       }
       panel.appendChild(presets);
@@ -2649,6 +2737,7 @@
         var ids = Object.keys(planDraft).map(function(x){ return parseInt(x, 10); }).sort(function(a, b){ return a - b; });
         if(!ids.length){ msg.textContent = '至少勾选一个知识点再保存。'; return; }
         var keepPinned = getPlan().pinnedFirst.filter(function(i){ return ids.indexOf(i) >= 0; });
+        setWeakestPending(false);
         setPlan({ mode: 'custom', pointIds: ids, pinnedFirst: keepPinned });
         planEditorOpen = false;
         renderPlanPanel(); renderPath();
@@ -2662,6 +2751,13 @@
     function buildPlanSuggestions(lastAtt, plan){
       var wrap = document.createElement('div'); wrap.className = 'plan-suggest';
       var h = document.createElement('h4'); h.textContent = '来自测评的建议'; wrap.appendChild(h);
+      /* 批次 6：无计划时不出现「加入计划 / 置顶」动作与计划计数，改为引导先设目标 */
+      if(!hasUserPlan()){
+        var gp = document.createElement('p'); gp.style.cssText = 'margin:6px 0 0;font-size:13.5px;color:var(--muted);line-height:1.65';
+        gp.textContent = '你还没有设置学习目标。先在上方选一个预设、或用「自定义计划」勾选知识点生成计划，之后这里会根据你最近一次测评的错题，建议把哪些知识点加入计划、把最弱维知识点置顶到计划最前。';
+        wrap.appendChild(gp);
+        return wrap;
+      }
       var byId = {};
       BANK.forEach(function(q){ byId[q.id] = q; });
       var sug = { addPoints: [] };
@@ -2678,6 +2774,7 @@
         add.addEventListener('click', function(){
           var cur = getPlan();
           var ids = cur.pointIds.concat([s.pointIndex]);
+          setWeakestPending(false);
           setPlan({ mode: 'custom', pointIds: ids, pinnedFirst: cur.pinnedFirst });
           renderPlanPanel(); renderPath();
         });
@@ -2730,6 +2827,10 @@
             applyBtn.addEventListener('click', function(){
               var p2 = getPlan();
               var next = GoalLink.quizCfgFromPlan(p2);
+              /* 批次 6：换算出的新设置不携带待生效字段，从当前设置继承，避免静默丢失预选 */
+              var curCfg = loadQuizCfg();
+              next.weakestPending = curCfg.weakestPending;
+              next.weakestNotice = curCfg.weakestNotice;
               saveQuizCfg(next);
               renderQuizSettings();
               var ok = document.getElementById('cfg-ok');
